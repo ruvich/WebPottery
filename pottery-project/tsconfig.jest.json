@@ -3,6 +3,9 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "esModuleInterop": true,
-    "verbatimModuleSyntax": false
-  }
+    "verbatimModuleSyntax": false,
+    "types": ["node", "jest", "@testing-library/jest-dom", "vite/client"],
+    "moduleResolution": "node"
+  },
+  "include": ["src"]
 }

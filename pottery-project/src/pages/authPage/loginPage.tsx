@@ -1,9 +1,18 @@
 import React from "react";
+import { Box } from "@mui/material";
+import LoginForm from "../../features/auth/LoginForm";
 
 export const LoginPage: React.FC = () => {
   return (
-    <h1 style={{ textAlign: "center", marginTop: "40vh" }}>
-        Страница авторизации
-    </h1>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh"
+      }}
+    >
+      <LoginForm />
+    </Box>
   );
 };

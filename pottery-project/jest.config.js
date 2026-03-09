@@ -7,5 +7,8 @@ export default {
     '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: true, tsconfig: './tsconfig.jest.json' }],
   },
   setupFilesAfterEnv: ['./src/setupTests.ts'],
-  extensionsToTreatAsEsm: ['.ts', '.tsx']
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  moduleNameMapper: {
+    '^react-router-dom$': '<rootDir>/src/features/mocks/react-router-dom.ts', 
+  },
 };
