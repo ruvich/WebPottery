@@ -14,7 +14,7 @@ export const AppRoutes = () => {
         <Route path="/course" element={<PostsPage />} />
         <Route path="/students" element={<StudentsListPage />} />
         <Route path="*" element={<h1>Страница не найдена</h1>} />
-        <Route path="/error500" element={<Error500Page />} />
+        <Route path="/error-500" element={<Error500Page />} />
       </Route>
     </Routes>
   );
