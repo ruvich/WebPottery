@@ -108,3 +108,32 @@ describe("PostsPage", () => {
     });
   });
 });
+
+describe("PostsPage - создание поста", () => {
+  const originalRole = localStorage.getItem("userRole");
+
+  afterAll(() => {
+    if (originalRole) localStorage.setItem("userRole", originalRole);
+    else localStorage.removeItem("userRole");
+  });
+
+  test("кнопка 'Создать пост' отображается для TEACHER и открывает форму", async () => {
+    localStorage.setItem("userRole", "TEACHER");
+    render(<PostsPage />);
+
+    const createButton = await screen.findByRole("button", { name: /Создать пост/i });
+    expect(createButton).toBeInTheDocument();
+    expect(screen.queryByText(/Создать пост/i, { selector: "h2" })).not.toBeInTheDocument();
+
+    fireEvent.click(createButton);
+    expect(await screen.findByText("Создать пост", { selector: "h2" })).toBeInTheDocument();
+  });
+
+  test("кнопка 'Создать пост' не отображается для STUDENT", async () => {
+    localStorage.setItem("userRole", "STUDENT");
+    render(<PostsPage />);
+
+    const createButton = screen.queryByRole("button", { name: /Создать пост/i });
+    expect(createButton).not.toBeInTheDocument();
+  });
+});
