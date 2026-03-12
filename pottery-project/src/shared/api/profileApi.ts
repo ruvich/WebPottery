@@ -1,7 +1,7 @@
 import type { UserProfile, ApiResponse } from './types/UserProfile';
 
 const API_BASE_URL = 'http://localhost:8080/api';
-const AccessToken = localStorage.getItem('token');
+const AccessToken = localStorage.getItem('accessToken');
 
 const createHeaders = (token = AccessToken): Record<string, string> => {
   const headers: Record<string, string> = {

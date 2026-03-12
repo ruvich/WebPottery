@@ -2,7 +2,7 @@ import type { Solution, GradeSolutionRequest } from './types/solutionApi';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 const getToken = (): string | undefined => {
-  return localStorage.getItem('token') || undefined;
+  return localStorage.getItem('accessToken') || undefined;
 };
 
 const createHeaders = (token?: string): Record<string, string> => {

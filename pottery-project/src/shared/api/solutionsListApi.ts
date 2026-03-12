@@ -1,10 +1,9 @@
 import type { Solution } from './types/solutionsApi';
 
 const API_BASE_URL = 'http://localhost:8080/api';
-localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJWaWZnZGZnQG1kZi5yamQiLCJpZCI6IjRmODEwZmUzLWNiZGEtNGVkOC1iZmFmLWE0MWVmMGZkNzhhMSIsImVtYWlsIjoiVmlmZ2RmZ0BtZGYucmpkIiwicm9sZSI6IlRFQUNIRVIiLCJpYXQiOjE3NzMzMjc4ODQsImV4cCI6MTc3MzQxNDI4NH0.0y-g8WJy3MRrLJR5KPCdnUzJD_00E2VyoTYRHzOFnBI')
 
 const getToken = (): string | undefined => {
-  return localStorage.getItem('token') || undefined;
+  return localStorage.getItem('accessToken') || undefined;
 };
 
 const createHeaders = (token?: string): Record<string, string> => {

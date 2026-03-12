@@ -1,28 +1,7 @@
 {
   "files": [],
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "types": ["jest", "@testing-library/jest-dom"]
-  },
-  "include": ["src"],
-  "exclude": ["node_modules"], 
-  
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ],
+  ]
 }
