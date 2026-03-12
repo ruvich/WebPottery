@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Box, Grid, Select, MenuItem, Pagination, Typography } from "@mui/material";
+import { Box, Grid, Select, MenuItem, Pagination, Typography, Button } from "@mui/material";
 import type { Post, PostType, PostsResponse } from "../../shared/lib/api/posts";
 import { PostCard } from "../../entities/post/PostCard";
 import { useNavigate } from "react-router-dom";
 import { fetchPosts } from "../../shared/lib/api/posts";
+import { CreatePostForm } from "../../features/createPostForm/createPostForm"
 
 export const PostsPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -11,8 +12,11 @@ export const PostsPage = () => {
   const [total, setTotal] = useState(0);
   const [typeFilter, setTypeFilter] = useState<PostType | "ALL">("ALL");
 
+  const [openForm, setOpenForm] = useState(false);
+
   const pageSize = 6;
   const navigate = useNavigate();
+  const role = localStorage.getItem("userRole");
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -20,7 +24,7 @@ export const PostsPage = () => {
         const type = typeFilter === "ALL" ? undefined : typeFilter;
         const data: PostsResponse = await fetchPosts(page, pageSize, type);
 
-        setPosts(data.items);
+        setPosts(data?.items ?? []);
         setTotal(data.total);
       } catch (err: any) {
         const status = err.response?.status;
@@ -49,6 +53,16 @@ export const PostsPage = () => {
             <MenuItem value="MATERIAL">Материалы</MenuItem>
             <MenuItem value="TASK">Задания</MenuItem>
           </Select>
+          {role === "TEACHER" && (
+            <Button
+              variant="contained"
+              sx={{ mt: 3 }}
+              fullWidth
+              onClick={() => setOpenForm(true)}
+            >
+              Создать пост
+            </Button>
+          )}
         </Grid>
 
         <Grid size={{ xs: 12, md: 9 }}>
@@ -70,6 +84,7 @@ export const PostsPage = () => {
                 color="primary"
               />
             </Box>
+            <CreatePostForm open={openForm} onClose={() => setOpenForm(false)} />
           </Box>
         </Grid>
       </Grid>
