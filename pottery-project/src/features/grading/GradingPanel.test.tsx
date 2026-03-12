@@ -1,4 +1,3 @@
-// src/features/grading/ui/GradingPanel/__tests__/GradingPanel.test.tsx
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GradingPanel } from './GradingPanel';
@@ -17,7 +16,6 @@ describe('GradingPanel', () => {
     const slider = screen.getByRole('slider');
     expect(slider).toHaveValue('3');
     
-    // Ищем цифру 3 в элементе с классом score
     const scoreElement = screen.getByText('3', { selector: '.score' });
     expect(scoreElement).toBeInTheDocument();
     expect(scoreElement).toHaveClass('score');

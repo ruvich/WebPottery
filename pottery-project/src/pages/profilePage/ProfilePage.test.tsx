@@ -85,14 +85,12 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Тест Тестов')).toBeInTheDocument();
     });
     
-    // Находим кнопку редактирования
     const editButton = screen.getByRole('button', { name: /редактировать профиль/i });
     fireEvent.click(editButton);
     
-    // Ищем заголовок модалки (H3), а не просто текст
     const modalTitle = await screen.findByRole('heading', { 
       name: /редактировать профиль/i,
-      level: 3 // Указываем, что ищем заголовок 3-го уровня
+      level: 3 
     });
     expect(modalTitle).toBeInTheDocument();
     
@@ -118,31 +116,24 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Тест Тестов')).toBeInTheDocument();
     });
     
-    // Открываем модалку
     const editButton = screen.getByRole('button', { name: /редактировать профиль/i });
     fireEvent.click(editButton);
     
-    // Ждем появления модалки
     await screen.findByRole('heading', { name: /редактировать профиль/i, level: 3 });
     
-    // Находим инпут по лейблу
     const nameInput = screen.getByLabelText(/имя и фамилия/i);
     fireEvent.change(nameInput, { target: { value: 'Обновленное Имя' } });
     
-    // Находим кнопку сохранения
     const saveButton = screen.getByRole('button', { name: /сохранить изменения/i });
     fireEvent.click(saveButton);
     
-    // Проверяем, что имя обновилось
     await waitFor(() => {
       expect(screen.getByText('Обновленное Имя')).toBeInTheDocument();
     });
     
-    // Проверяем, что модалка закрылась
     expect(screen.queryByRole('heading', { name: /редактировать профиль/i, level: 3 })).not.toBeInTheDocument();
   });
 
-  // Дополнительный тест для проверки закрытия модалки
   test('закрывает модалку при клике на кнопку отмены', async () => {
     render(<ProfilePage />);
     
@@ -150,22 +141,18 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Тест Тестов')).toBeInTheDocument();
     });
     
-    // Открываем модалку
     const editButton = screen.getByRole('button', { name: /редактировать профиль/i });
     fireEvent.click(editButton);
     
-    // Проверяем, что модалка открылась
     const modalTitle = await screen.findByRole('heading', { 
       name: /редактировать профиль/i, 
       level: 3 
     });
     expect(modalTitle).toBeInTheDocument();
     
-    // Находим и кликаем кнопку отмены
     const cancelButton = screen.getByRole('button', { name: /отмена/i });
     fireEvent.click(cancelButton);
     
-    // Проверяем, что модалка закрылась
     await waitFor(() => {
       expect(screen.queryByRole('heading', { 
         name: /редактировать профиль/i, 

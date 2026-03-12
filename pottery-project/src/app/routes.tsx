@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { LoginPage } from "../pages/authPage/loginPage";
 import { StudentsListPage } from "../pages/studentsListPage/studentsListPage.tsx";
 import MainLayout from "../shared/ui/layout/mainLayout.tsx";
-import { ProfilePage } from '../pages/profilePage/ProfilePage.tsx';
+import { ProfilePage } from '../pages/profilePage/ProfilePage';
 import { SolutionsPage } from "../pages/solutionsPage/SolutionsPage";
 import { SolutionPage } from "../pages/solutionPage/SolutionPage";
 

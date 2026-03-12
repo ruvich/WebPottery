@@ -1,4 +1,4 @@
-import { profileApi,  } from '../api';
+import { profileApi  } from '../api';
 import type { UserProfile,  } from '../types/UserProfile';
 
 const mockProfile: UserProfile = {
