@@ -1,9 +1,16 @@
 import { AppBar, Toolbar, Typography, Button, Box, IconButton } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 export default function Header() {
   const role = localStorage.getItem("userRole") as "STUDENT" | "TEACHER";
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userRole");
+    navigate("/login");
+  };
 
   return (
     <AppBar position="static">
@@ -26,10 +33,14 @@ export default function Header() {
           </Box>
         </Box>
 
-        <Box>
+        <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
           <IconButton color="inherit" component={Link} to="/profile">
             <AccountCircleIcon sx={{ fontSize: 40 }} />
           </IconButton>
+
+          <Button color="inherit" onClick={handleLogout}>
+            Выйти
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>
