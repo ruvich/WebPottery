@@ -68,22 +68,30 @@ export const PostsPage = () => {
         <Grid size={{ xs: 12, md: 9 }}>
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: 600 }}>
             <Box sx={{ flex: 1 }}>
-              <Grid container spacing={2}>
-                {posts.map(post => (
-                  <Grid size={{ xs: 12 }} key={post.id}>
-                    <PostCard post={post} />
-                  </Grid>
-                ))}
-              </Grid>
+              {posts.length === 0 ? (
+                <Typography variant="body1" sx={{ textAlign: "center", mt: 4 }}>
+                  Посты не найдены
+                </Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {posts.map(post => (
+                    <Grid size={{ xs: 12 }} key={post.id}>
+                      <PostCard post={post} />
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-              <Pagination
-                page={page}
-                count={totalPages}
-                onChange={(_, value) => setPage(value)}
-                color="primary"
-              />
-            </Box>
+            {totalPages > 0 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Pagination
+                  page={page}
+                  count={totalPages}
+                  onChange={(_, value) => setPage(value)}
+                  color="primary"
+                />
+              </Box>
+            )}
             <CreatePostForm
               open={openForm}
               onClose={() => setOpenForm(false)}
