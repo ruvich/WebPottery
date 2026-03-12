@@ -19,7 +19,7 @@ export const getStudents = async (page = 0, size = 20, q?: string): Promise<Stud
   const params: Record<string, any> = { page, size };
   if (q) params.q = q;
 
-  const response = await axios.get<StudentsResponse>("/students", {
+  const response = await axios.get<StudentsResponse>("http://localhost:8080/api/students", {
     headers: { Authorization: `Bearer ${token}` },
     params,
   });

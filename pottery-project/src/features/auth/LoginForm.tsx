@@ -32,7 +32,7 @@ const LoginForm = () => {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("userRole", data.user.role);
 
-      navigate("/courses");
+      navigate("/course");
 
       console.log("Успешно:", data);
     } catch (err: any) {

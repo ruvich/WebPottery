@@ -20,6 +20,17 @@ export type StudentPerformanceResponse = {
 };
 
 export const getStudentPerformance = async (studentId: string): Promise<StudentPerformanceResponse> => {
-  const { data } = await axios.get<StudentPerformanceResponse>(`/students/${studentId}/performance`);
+  const token = localStorage.getItem("accessToken");
+  if (!token) throw new Error("Нет токена авторизации");
+
+  const { data } = await axios.get<StudentPerformanceResponse>(
+    `http://localhost:8080/api/students/${studentId}/performance`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
   return data;
 };

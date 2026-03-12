@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route,  Navigate } from "react-router-dom";
 import { LoginPage } from "../pages/authPage/loginPage";
 import { PostsPage } from "../pages/coursePage/coursePage";
 import { StudentsListPage } from "../pages/studentsListPage/studentsListPage.tsx";
@@ -10,6 +10,7 @@ export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
       <Route element={<MainLayout />}>
         <Route path="/course" element={<PostsPage />} />

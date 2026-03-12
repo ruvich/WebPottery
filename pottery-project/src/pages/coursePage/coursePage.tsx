@@ -18,24 +18,24 @@ export const PostsPage = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("userRole");
 
+  const loadPosts = async () => {
+    try {
+      const type = typeFilter === "ALL" ? undefined : typeFilter;
+      const data: PostsResponse = await fetchPosts(page, pageSize, type);
+
+      setPosts(data?.items ?? []);
+      setTotal(data.total);
+    } catch (err: any) {
+      const status = err.response?.status;
+      if (status === 401) navigate("/login");
+      else if (status === 500) navigate("/error-500");
+      else console.error("Неизвестная ошибка при загрузке постов", err);
+    }
+  };
+
   useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        const type = typeFilter === "ALL" ? undefined : typeFilter;
-        const data: PostsResponse = await fetchPosts(page, pageSize, type);
-
-        setPosts(data?.items ?? []);
-        setTotal(data.total);
-      } catch (err: any) {
-        const status = err.response?.status;
-        if (status === 401) navigate("/login");
-        else if (status === 500) navigate("/error-500");
-        else console.error("Неизвестная ошибка при загрузке постов", err);
-      }
-    };
-
     loadPosts();
-  }, [page, typeFilter, navigate]);
+  }, [page, typeFilter]);
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -84,7 +84,11 @@ export const PostsPage = () => {
                 color="primary"
               />
             </Box>
-            <CreatePostForm open={openForm} onClose={() => setOpenForm(false)} />
+            <CreatePostForm
+              open={openForm}
+              onClose={() => setOpenForm(false)}
+              onPostCreated={loadPosts}
+            />
           </Box>
         </Grid>
       </Grid>

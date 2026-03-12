@@ -3,9 +3,13 @@ import { Box, Button, TextField, MenuItem, Select, Dialog, DialogTitle, DialogCo
 import type { PostType } from "../../shared/lib/api/posts";
 import { createPost } from "../../shared/lib/api/createPost";
 
-type Props = { open: boolean; onClose: () => void };
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  onPostCreated: () => void;
+};
 
-export const CreatePostForm = ({ open, onClose }: Props) => {
+export const CreatePostForm = ({ open, onClose, onPostCreated }: Props) => {
   const [type, setType] = useState<PostType>("MATERIAL");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -36,6 +40,17 @@ export const CreatePostForm = ({ open, onClose }: Props) => {
       await createPost(body as any);
       console.log("POST CREATED", body);
       setError("");
+
+      setTitle("");
+      setDescription("");
+      setMaterialTitle("");
+      setUrl("");
+      setText("");
+      setTaskDescription("");
+      setDeadline("");
+
+      onPostCreated();
+
       onClose();
     } catch (e) {
       console.error("CREATE POST ERROR", e);
@@ -72,7 +87,7 @@ export const CreatePostForm = ({ open, onClose }: Props) => {
           </>}
 
           {type==="TASK" && <>
-            <TextField fullWidth label="Описание задания" value={taskDescription} onChange={e=>setTaskDescription(e.target.value)} sx={{ mb:2 }} />
+            <TextField fullWidth label="Текст задания" value={taskDescription} onChange={e=>setTaskDescription(e.target.value)} sx={{ mb:2 }} />
             <TextField fullWidth type="datetime-local" label="Deadline" InputLabelProps={{ shrink:true }} value={deadline} onChange={e=>setDeadline(e.target.value)} sx={{ mb:2 }} />
           </>}
         </Box>

@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CreatePostForm } from "./createPostForm";
 
 const onCloseMock = jest.fn();
+const onPostCreatedMock = jest.fn();
 
 import { createPost } from "../../shared/lib/api/createPost";
 jest.mock("../../shared/lib/api/createPost", () => ({
@@ -9,10 +10,18 @@ jest.mock("../../shared/lib/api/createPost", () => ({
 }));
 
 describe("CreatePostForm", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   test("рендерит поля формы для MATERIAL", () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
 
     expect(screen.getByText("Создать пост")).toBeInTheDocument();
     expect(screen.getByLabelText("Название")).toBeInTheDocument();
@@ -22,7 +31,13 @@ describe("CreatePostForm", () => {
   });
 
   test("смена типа на TASK показывает поля задания", () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
 
     const selectElements = screen.getAllByRole("combobox");
     const typeSelect = selectElements[0];
@@ -30,12 +45,18 @@ describe("CreatePostForm", () => {
     fireEvent.mouseDown(typeSelect);
     fireEvent.click(screen.getByText("Задание"));
 
-    expect(screen.getByLabelText("Описание задания")).toBeInTheDocument();
+    expect(screen.getByLabelText("Текст задания")).toBeInTheDocument();
     expect(screen.getByLabelText("Deadline")).toBeInTheDocument();
   });
 
   test("не отправляет форму если обязательные поля пустые", async () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
 
     fireEvent.click(screen.getByText("Создать"));
 
@@ -44,7 +65,13 @@ describe("CreatePostForm", () => {
   });
 
   test("смена materialType на TEXT показывает поле текста", () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
 
     const selects = screen.getAllByRole("combobox");
     const materialSelect = selects[1];
@@ -55,8 +82,14 @@ describe("CreatePostForm", () => {
     expect(screen.getByLabelText("Текст")).toBeInTheDocument();
   });
 
-  test("ввод значений и submit вызывает createPost", async () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+  test("ввод значений и submit вызывает createPost и onPostCreated", async () => {
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
 
     fireEvent.change(screen.getByLabelText("Название"), { target: { value: "Мой пост" } });
     fireEvent.change(screen.getByLabelText("Описание"), { target: { value: "Описание поста" } });
@@ -67,10 +100,18 @@ describe("CreatePostForm", () => {
 
     await waitFor(() => expect(createPost).toHaveBeenCalled());
     await waitFor(() => expect(onCloseMock).toHaveBeenCalled());
+    await waitFor(() => expect(onPostCreatedMock).toHaveBeenCalled());
   });
 
   test("кнопка Отмена вызывает onClose", () => {
-    render(<CreatePostForm open={true} onClose={onCloseMock} />);
+    render(
+      <CreatePostForm
+        open={true}
+        onClose={onCloseMock}
+        onPostCreated={onPostCreatedMock}
+      />
+    );
+
     fireEvent.click(screen.getByText("Отмена"));
     expect(onCloseMock).toHaveBeenCalled();
   });

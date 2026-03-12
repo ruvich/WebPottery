@@ -17,6 +17,6 @@ export interface LoginResponse {
 }
 
 export const login = async (data: LoginData): Promise<LoginResponse> => {
-  const response = await axios.post('/api/auth/login', data);
+  const response = await axios.post('http://localhost:8080/api/auth/login', data);
   return response.data;
 };

@@ -20,9 +20,9 @@ export interface CreatePostRequest {
 }
 
 export const createPost = async (data: CreatePostRequest) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   console.log("POST BODY:", data);
-  const response = await axios.post("/posts", data, {
+  const response = await axios.post("http://localhost:8080/api/posts", data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
