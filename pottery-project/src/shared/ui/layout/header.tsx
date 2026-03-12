@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 export default function Header() {
-  const role = localStorage.getItem("role") as "student" | "teacher";
+  const role = localStorage.getItem("userRole") as "STUDENT" | "TEACHER";
 
   return (
     <AppBar position="static">
@@ -18,7 +18,7 @@ export default function Header() {
               Главная
             </Button>
 
-            {role === "teacher" && (
+            {role === "TEACHER" && (
               <Button color="inherit" component={Link} to="/students">
                 Студенты
               </Button>

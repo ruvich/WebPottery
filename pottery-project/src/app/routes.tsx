@@ -3,6 +3,7 @@ import { LoginPage } from "../pages/authPage/loginPage";
 import { PostsPage } from "../pages/coursePage/coursePage";
 import { StudentsListPage } from "../pages/studentsListPage/studentsListPage.tsx";
 import { Error500Page } from "../pages/error500/error500.tsx";
+import { StudentProfilePage } from "../pages/studentProfilePage/studentProfilePage.tsx";
 import  MainLayout  from "../shared/ui/layout/mainLayout.tsx";
 
 export const AppRoutes = () => {
@@ -15,6 +16,7 @@ export const AppRoutes = () => {
         <Route path="/students" element={<StudentsListPage />} />
         <Route path="*" element={<h1>Страница не найдена</h1>} />
         <Route path="/error-500" element={<Error500Page />} />
+        <Route path="/profile/student/:id" element={<StudentProfilePage />} />
       </Route>
     </Routes>
   );
