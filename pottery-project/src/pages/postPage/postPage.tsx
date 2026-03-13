@@ -1,0 +1,77 @@
+import { useEffect, useState } from "react";
+import { Box, Grid, Typography, Button } from "@mui/material";
+import { PostCard } from "../../entities/post/FullPostCard";
+import { useNavigate } from "react-router-dom";
+import { fetchPost } from "../../shared/lib/api/post";
+import type { PostsResponse } from "../../shared/lib/api/post";
+import { CreateSolution } from "../../features/createSolution/createSolution";
+
+
+export const PostPage = () => {
+  const [post, setPost] = useState<PostsResponse | null>(null);
+  const [openForm, setOpenForm] = useState(false);
+  const navigate = useNavigate();
+  const role = localStorage.getItem("userRole");
+
+  const loadPost = async () => {
+    const postID = "d9784ff4-208a-4d97-b3cb-6873ef5e2830";
+    //const postID = localStorage.getItem("userRole");
+
+    try {
+      const data: PostsResponse = await fetchPost(postID);
+      setPost(data);
+    } catch (err: any) {
+      const status = err.response?.status;
+      if (status === 401) navigate("/login");
+      else if (status === 500) navigate("/error-500");
+      else console.error("Неизвестная ошибка при загрузке поста", err);
+    }
+  };
+
+  useEffect(() => {
+    loadPost();
+  }, []);
+
+
+  return (
+    <Box sx={{ p: 4 }}>
+      <Grid container spacing={4}>
+        <Grid size={{ xs: 12, md: 3 }}>
+          {role !== "TEACHER" && post?.type == "TASK" && (
+            <Button
+              variant="contained"
+              sx={{ mt: 3 }}
+              fullWidth
+              onClick={() => setOpenForm(true)}
+            >
+              Прикрепить/изменить решение
+            </Button>
+          )}
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 9 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: 600 }}>
+            <Box sx={{ flex: 1 }}>
+              {!post ? (
+                
+                <Typography variant="body1" sx={{ textAlign: "center", mt: 4 }}>
+                  Загрузка...
+                </Typography>
+              ) : (
+                
+                <PostCard post={post} />
+              )}
+            </Box>
+            
+            <CreateSolution
+              open={openForm}
+              onClose={() => setOpenForm(false)}
+              onPostCreated={loadPost}
+            />
+
+          </Box>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
