@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { Box, Button, TextField, MenuItem, Select, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from "@mui/material";
-import type { PostType } from "../../shared/lib/api/posts";
-import { createPost } from "../../shared/lib/api/createPost";
+import { useEffect, useState } from "react";
+import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from "@mui/material";
+import type {CreateSolutionResponse} from "../../shared/lib/api/getMySolution"
+import { createSolution } from "../../shared/lib/api/createSolution";
+import { getMySolution } from "../../shared/lib/api/getMySolution";
+import { useParams } from "react-router-dom";
+
 
 type Props = {
   open: boolean;
@@ -10,91 +13,69 @@ type Props = {
 };
 
 export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
-  const [type, setType] = useState<PostType>("MATERIAL");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-
-  const [materialType, setMaterialType] = useState<"LINK" | "TEXT">("LINK");
-  const [materialTitle, setMaterialTitle] = useState("");
-  const [url, setUrl] = useState("");
+  const postID = useParams().postId;
   const [text, setText] = useState("");
-
-  const [taskDescription, setTaskDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
-
+  const [url, setUrl] = useState("");
+  const [submit, setSubmit] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    if (!title.trim()) return setError("Название поста обязательно");
-    if (type === "MATERIAL") {
-      if (!materialTitle.trim()) return setError("Название материала обязательно");
-      if (materialType === "LINK" && !url.trim()) return setError("URL обязателен для LINK");
-      if (materialType === "TEXT" && !text.trim()) return setError("Текст обязателен для TEXT");
-    }
-
-    const body = type === "MATERIAL"
-      ? { type, title, description, material: { type: materialType, title: materialTitle, url: materialType==="LINK"?url:null, text: materialType==="TEXT"?text:null }, task: null }
-      : { type, title, description, material: null, task: { description: taskDescription || null, deadline: deadline || null } };
-
+  const getSolution = async () => { 
+      
     try {
-      await createPost(body as any);
-      console.log("POST CREATED", body);
-      setError("");
-
-      setTitle("");
-      setDescription("");
-      setMaterialTitle("");
-      setUrl("");
-      setText("");
-      setTaskDescription("");
-      setDeadline("");
-
-      onPostCreated();
-
-      onClose();
+      const data: CreateSolutionResponse = await getMySolution(postID);
+      setText(data.text);
+      setUrl(data.videoUrl);
+      setSubmit(data.submit);
     } catch (e) {
-      console.error("CREATE POST ERROR", e);
-      setError("Ошибка при создании поста");
+      console.error("GET MY SOLUTION ERROR", e);
+      setError("Видимо решений у тебя нет");
     }
   };
 
+  const handleSubmit = async () => {    
+    if (!text.trim()) return setError("Описание решения обязательно");
+    if (!url.trim()) return setError("Ссылка на видио обязательна");
+    const body = { text, videoUrl: url, submit};
+      
+    try {
+      await createSolution(body, postID);
+      console.log("Solution CREATED", body);
+      setError("");
+
+      setText("");
+      setUrl("");
+      onPostCreated();
+      onClose();
+      getSolution();
+    } catch (e) {
+      console.error("CREATE POST ERROR", e);
+      setError("Ошибка отправки ответа");
+    }
+  };
+
+  useEffect(() => {
+      getSolution();
+    }, []);
+  
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Создать пост</DialogTitle>
+      <DialogTitle>Прикрепить/изменить решение</DialogTitle>
 
       <DialogContent>
         <Box sx={{ mt:1 }}>
           {error && <Alert severity="error" sx={{ mb:2 }}>{error}</Alert>}
-
-          <Select fullWidth value={type} onChange={e=>setType(e.target.value as PostType)} sx={{ mb:2 }}>
-            <MenuItem value="MATERIAL">Материал</MenuItem>
-            <MenuItem value="TASK">Задание</MenuItem>
-          </Select>
-
-          <TextField fullWidth label="Название" value={title} onChange={e=>setTitle(e.target.value)} sx={{ mb:2 }} />
-          <TextField fullWidth label="Описание" value={description} onChange={e=>setDescription(e.target.value)} sx={{ mb:2 }} />
-
-          {type==="MATERIAL" && <>
-            <Select fullWidth value={materialType} onChange={e=>setMaterialType(e.target.value as any)} sx={{ mb:2 }}>
-              <MenuItem value="LINK">LINK</MenuItem>
-              <MenuItem value="TEXT">TEXT</MenuItem>
-            </Select>
-
-            <TextField fullWidth label="Название материала" value={materialTitle} onChange={e=>setMaterialTitle(e.target.value)} sx={{ mb:2 }} />
-
-            {materialType==="LINK" && <TextField fullWidth label="URL" value={url} onChange={e=>setUrl(e.target.value)} sx={{ mb:2 }} />}
-            {materialType==="TEXT" && <TextField fullWidth label="Текст" multiline rows={4} value={text} onChange={e=>setText(e.target.value)} sx={{ mb:2 }} />}
-          </>}
-
-          {type==="TASK" && <>
-            <TextField fullWidth label="Текст задания" value={taskDescription} onChange={e=>setTaskDescription(e.target.value)} sx={{ mb:2 }} />
-            <TextField fullWidth type="datetime-local" label="Deadline" InputLabelProps={{ shrink:true }} value={deadline} onChange={e=>setDeadline(e.target.value)} sx={{ mb:2 }} />
-          </>}
+          <TextField fullWidth label="Основной текст" value={text} onChange={e=>setText(e.target.value)} sx={{ mb:2 }} />
+          <TextField fullWidth label="Ссылка на видео" value={url} onChange={e=>setUrl(e.target.value)} sx={{ mb:2 }} />
+          <DialogContent>
+          <p>{submit ? 'Сдать' : 'Сдать позже'}</p>
+          <input type="checkbox" checked={submit} onChange={(e) => setSubmit(e.target.checked)}/>
+          </DialogContent>
         </Box>
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleSubmit}>Создать</Button>
+        <Button variant="contained" onClick={handleSubmit}>Отправить</Button>
         <Button variant="outlined" onClick={onClose}>Отмена</Button>
       </DialogActions>
     </Dialog>

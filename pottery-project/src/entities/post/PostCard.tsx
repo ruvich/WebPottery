@@ -1,4 +1,5 @@
 import { Card, CardContent, Typography, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import type { Post } from "../../shared/lib/api/posts";
 
 type Props = {
@@ -6,8 +7,16 @@ type Props = {
 };
 
 export const PostCard = ({ post }: Props) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/posts/${post.id}`);
+  };
+
   return (
-    <Card>
+    <Card
+      onClick={handleClick}
+      sx={{ cursor: "pointer" }}>
       <CardContent>
         <Chip
           label={post.type}

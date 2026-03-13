@@ -19,7 +19,7 @@ export const SolutionPage: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setAuthError(true);
       setTimeout(() => navigate('/login'), 3000);

@@ -31,7 +31,7 @@ const LoginForm = () => {
       const data = await login({ email, password });
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("userRole", data.user.role);
-
+      localStorage.setItem("userId", data.user.id);
       navigate("/course");
 
       console.log("Успешно:", data);
