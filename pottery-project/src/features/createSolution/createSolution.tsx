@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from "@mui/material";
-import type {CreateSolutionResponse} from "../../shared/lib/api/getMySolution"
-import { createSolution } from "../../shared/lib/api/createSolution";
-import { getMySolution } from "../../shared/lib/api/getMySolution";
+import type {CreateSolutionResponse} from "../../shared/lib/api/Solution/getMySolution"
+import { createSolution } from "../../shared/lib/api/Solution/createSolution";
+import { getMySolution } from "../../shared/lib/api/Solution/getMySolution";
+import { editSolution } from "../../shared/lib/api/Solution/editSolution";
+import { submitSolution } from "../../shared/lib/api/Solution/editSolution";
 import { useParams } from "react-router-dom";
 
 
@@ -15,8 +17,11 @@ type Props = {
 export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
   const postID = useParams().postId;
   const [text, setText] = useState("");
+  const [solutionID, setSolutionID] = useState("");
   const [url, setUrl] = useState("");
   const [submit, setSubmit] = useState(false);
+  const [oldSubmit, setOldSubmit] = useState(false);
+  const [created, setCreated] = useState(false);
   const [error, setError] = useState("");
 
   const getSolution = async () => { 
@@ -26,6 +31,13 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
       setText(data.text);
       setUrl(data.videoUrl);
       setSubmit(data.submit);
+      setOldSubmit(data.submit);      
+      setSolutionID(data.id);
+      if(data.id == null){
+        setCreated(false);
+      }else{
+        setCreated(true);
+      }
     } catch (e) {
       console.error("GET MY SOLUTION ERROR", e);
       setError("Видимо решений у тебя нет");
@@ -36,23 +48,51 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
     if (!text.trim()) return setError("Описание решения обязательно");
     if (!url.trim()) return setError("Ссылка на видио обязательна");
     const body = { text, videoUrl: url, submit};
-      
-    try {
-      await createSolution(body, postID);
-      console.log("Solution CREATED", body);
-      setError("");
+     
+    if(created){
+      try {
+        await editSolution(body, solutionID);
+        console.log("Solution EDITED", body);
+        setError("");
 
-      setText("");
-      setUrl("");
-      onPostCreated();
-      onClose();
-      getSolution();
-    } catch (e) {
-      console.error("CREATE POST ERROR", e);
-      setError("Ошибка отправки ответа");
+        setText("");
+        setUrl("");
+        onPostCreated();
+        onClose();
+        getSolution();
+      } catch (e) {
+        console.error("EDIT SOLUTION ERROR", e);
+        setError("Ошибка изменения решения");
+      }
+
+      if(submit != oldSubmit){
+       try {
+        await submitSolution(submit, solutionID);
+        console.log("Submit EDITED", body);
+        setError("");
+      } catch (e) {
+        console.error("EDIT SUBMIT ERROR", e);
+        setError("Ошибка изменения статуса решения");
+      } 
+      }
+    }
+    else{
+      try {
+        await createSolution(body, postID);
+        console.log("Solution CREATED", body);
+        setError("");
+
+        setText("");
+        setUrl("");
+        onPostCreated();
+        onClose();
+        getSolution();
+      } catch (e) {
+        console.error("CREATE SOLUTION ERROR", e);
+        setError("Ошибка создания решения");
+      }
     }
   };
-
   useEffect(() => {
       getSolution();
     }, []);
