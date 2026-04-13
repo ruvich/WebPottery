@@ -3,6 +3,7 @@ import { Box, Button, TextField, MenuItem, Select, Typography, Alert } from "@mu
 import { useNavigate } from "react-router-dom";
 import type { PostType } from "../../shared/lib/api/posts";
 import { createPost } from "../../shared/lib/api/createPost";
+import { distributeTeamsRandom } from "../../shared/lib/api/teams";
 
 export const CreatePostPage = () => {
   const navigate = useNavigate();
@@ -120,12 +121,22 @@ export const CreatePostPage = () => {
     };
 
     try {
-      await createPost(body);
-      navigate("/course");
-    } catch (e) {
-      console.error(e);
-      setError("Ошибка при создании поста");
-    }
+        const created = await createPost(body);
+        const postId = created.id;
+
+        if (
+            type === "TASK" &&
+            taskMode === "TEAM" &&
+            teamDistributionType === "RANDOM"
+        ) {
+            await distributeTeamsRandom(postId);
+        }
+
+        navigate("/course");
+        } catch (e) {
+        console.error(e);
+        setError("Ошибка при создании поста");
+        }
   };
 
   return (
