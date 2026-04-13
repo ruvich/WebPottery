@@ -13,6 +13,7 @@ export const TeamsPage = () => {
   const [loading, setLoading] = useState(true);
   const [maxMembersPerTeam, setMaxMembersPerTeam] = useState(0);
   const [formationDeadline, setFormationDeadline] = useState<string | null>(null);
+  const [teamDistributionType, setTeamDistributionType] = useState<string | null>(null);
 
   const userId = localStorage.getItem("userId");
   const role = (localStorage.getItem("userRole") ?? "").toUpperCase();
@@ -42,6 +43,7 @@ export const TeamsPage = () => {
         const rules = postData?.task?.teamRules;
         setMaxMembersPerTeam(rules?.maxMembersPerTeam ?? 0);
         setFormationDeadline(rules?.formationDeadline ?? null);
+        setTeamDistributionType(postData?.task?.teamDistributionType ?? null);
 
     } catch (e) {
         console.error("Ошибка загрузки:", e);
@@ -99,7 +101,7 @@ export const TeamsPage = () => {
                       <Button size="small" variant="contained" disabled={!canJoin(team)} onClick={() => handleJoin(team.id)}>Вступить</Button>
                     )}
 
-                    {isMyTeam && (
+                    {isMyTeam && teamDistributionType === "SELF_SELECTION" && (
                       <Button size="small" variant="outlined" color="error" disabled={!isBeforeDeadline()} onClick={() => handleLeave(team.id)}>Покинуть</Button>
                     )}
                   </>
