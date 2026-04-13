@@ -4,6 +4,7 @@ import type { Post, PostType, PostsResponse } from "../../shared/lib/api/posts";
 import { PostCard } from "../../entities/post/PostCard";
 import { useNavigate } from "react-router-dom";
 import { fetchPosts } from "../../shared/lib/api/posts";
+import { deletePost } from "../../shared/lib/api/createPost";
 
 export const PostsPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -14,6 +15,15 @@ export const PostsPage = () => {
   const pageSize = 6;
   const navigate = useNavigate();
   const role = localStorage.getItem("userRole");
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePost(id);
+      await loadPosts();
+    } catch (e) {
+      console.error("Ошибка удаления поста", e);
+    }
+  };
 
   const loadPosts = async () => {
     try {
@@ -73,7 +83,11 @@ export const PostsPage = () => {
                 <Grid container spacing={2}>
                   {posts.map(post => (
                     <Grid size={{ xs: 12 }} key={post.id}>
-                      <PostCard post={post} />
+                      <PostCard
+                        post={post}
+                        canDelete={role === "TEACHER"}
+                        onDelete={handleDelete}
+                      />
                     </Grid>
                   ))}
                 </Grid>

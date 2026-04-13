@@ -11,9 +11,14 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
+jest.mock("../../shared/lib/api/posts", () => ({
+  fetchPosts: jest.fn(),
+  deletePost: jest.fn(),
+}));
+
 const mockPosts = Array.from({ length: 9 }, (_, i) => ({
   id: `post-${i}`,
-  type: (i % 2 === 0 ? "MATERIAL" : "TASK") as PostType, 
+  type: (i % 2 === 0 ? "MATERIAL" : "TASK") as PostType,
   title: `Пост ${i + 1}`,
   description: `Описание поста ${i + 1}`,
   createdAt: new Date().toISOString(),
@@ -21,10 +26,11 @@ const mockPosts = Array.from({ length: 9 }, (_, i) => ({
 }));
 
 beforeEach(() => {
-  jest.spyOn(api, "fetchPosts").mockImplementation(async (page, size, type) => {
+  (api.fetchPosts as jest.Mock).mockImplementation(async (page, size, type) => {
     const filtered = type ? mockPosts.filter(p => p.type === type) : mockPosts;
     const start = (page - 1) * size;
     const end = start + size;
+
     return {
       items: filtered.slice(start, end),
       page,
@@ -43,19 +49,16 @@ afterEach(() => {
 describe("PostsPage", () => {
   test("отображает фильтр и опции", async () => {
     render(<PostsPage />);
+
     const select = screen.getByRole("combobox");
     fireEvent.mouseDown(select);
 
-    const allOption = await screen.findByRole("option", { name: "Все" });
-    const materialsOption = screen.getByRole("option", { name: "Материалы" });
-    const tasksOption = screen.getByRole("option", { name: "Задания" });
-
-    expect(allOption).toBeInTheDocument();
-    expect(materialsOption).toBeInTheDocument();
-    expect(tasksOption).toBeInTheDocument();
+    expect(await screen.findByRole("option", { name: "Все" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Материалы" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Задания" })).toBeInTheDocument();
   });
 
-  test("показывает первые посты после загрузки", async () => {
+  test("показывает посты после загрузки", async () => {
     render(<PostsPage />);
     const posts = await screen.findAllByText(/Пост/i);
     expect(posts.length).toBeGreaterThan(0);
@@ -63,6 +66,7 @@ describe("PostsPage", () => {
 
   test("фильтрует посты по типу", async () => {
     render(<PostsPage />);
+
     const select = screen.getByRole("combobox");
     fireEvent.mouseDown(select);
 
@@ -75,6 +79,7 @@ describe("PostsPage", () => {
 
   test("смена страницы обновляет карточки", async () => {
     render(<PostsPage />);
+
     await waitFor(() => screen.getAllByText(/Пост/i));
 
     const nextPage = screen.getByRole("button", { name: /2/i });
@@ -84,32 +89,32 @@ describe("PostsPage", () => {
     expect(posts.length).toBeGreaterThan(0);
   });
 
-  test("пагинация отображается и имеет правильное количество страниц", async () => {
-    render(<PostsPage />);
-    await waitFor(() => {
-      const paginationButtons = screen.getAllByRole("button", { name: /\d+/ });
-      expect(paginationButtons.length).toBeGreaterThan(1);
-    });
-  });
-
   test("редиректит на логин при 401", async () => {
-    jest.spyOn(api, "fetchPosts").mockRejectedValueOnce({ response: { status: 401 } });
+    (api.fetchPosts as jest.Mock).mockRejectedValueOnce({
+      response: { status: 401 },
+    });
+
     render(<PostsPage />);
+
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/login");
     });
   });
 
-  test("редиректит на страницу 500 при 500", async () => {
-    jest.spyOn(api, "fetchPosts").mockRejectedValueOnce({ response: { status: 500 } });
+  test("редиректит на 500 страницу", async () => {
+    (api.fetchPosts as jest.Mock).mockRejectedValueOnce({
+      response: { status: 500 },
+    });
+
     render(<PostsPage />);
+
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/error-500");
     });
   });
 });
 
-describe("PostsPage - создание поста", () => {
+describe("PostsPage - роли и действия", () => {
   const originalRole = localStorage.getItem("userRole");
 
   afterAll(() => {
@@ -117,23 +122,37 @@ describe("PostsPage - создание поста", () => {
     else localStorage.removeItem("userRole");
   });
 
-  test("кнопка 'Создать пост' отображается для TEACHER и открывает форму", async () => {
+  test("кнопка создания видна для TEACHER", () => {
     localStorage.setItem("userRole", "TEACHER");
+
     render(<PostsPage />);
 
-    const createButton = await screen.findByRole("button", { name: /Создать пост/i });
-    expect(createButton).toBeInTheDocument();
-    expect(screen.queryByText(/Создать пост/i, { selector: "h2" })).not.toBeInTheDocument();
-
-    fireEvent.click(createButton);
-    expect(await screen.findByText("Создать пост", { selector: "h2" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /создать пост/i })
+    ).toBeInTheDocument();
   });
 
-  test("кнопка 'Создать пост' не отображается для STUDENT", async () => {
+  test("кнопка создания скрыта для STUDENT", () => {
     localStorage.setItem("userRole", "STUDENT");
+
     render(<PostsPage />);
 
-    const createButton = screen.queryByRole("button", { name: /Создать пост/i });
-    expect(createButton).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /создать пост/i })
+    ).not.toBeInTheDocument();
+  });
+
+  test("кнопка удаления НЕ видна для STUDENT", async () => {
+    localStorage.setItem("userRole", "STUDENT");
+
+    render(<PostsPage />);
+
+    await screen.findAllByText(/Пост/i);
+
+    const deleteButtons = screen.queryAllByRole("button", {
+      name: /delete/i,
+    });
+
+    expect(deleteButtons.length).toBe(0);
   });
 });

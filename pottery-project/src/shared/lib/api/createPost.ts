@@ -50,3 +50,13 @@ export const createPost = async (data: CreatePostRequest) => {
 
   return response.data;
 };
+
+export const deletePost = async (postId: string) => {
+  const token = localStorage.getItem("accessToken");
+
+  return axios.delete(`http://localhost:8080/api/posts/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
