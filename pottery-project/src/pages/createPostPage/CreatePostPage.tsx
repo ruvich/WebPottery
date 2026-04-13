@@ -183,15 +183,17 @@ export const CreatePostPage = () => {
                 <MenuItem value="SELF_SELECTION">Самостоятельное формирование (студентами)</MenuItem>
               </Select>
 
-              <TextField
-                fullWidth
-                type="datetime-local"
-                label="Дедлайн формирования команд"
-                InputLabelProps={{ shrink: true }}
-                value={formationDeadline}
-                onChange={(e) => setFormationDeadline(e.target.value)}
-                sx={{ mb: 2 }}
-              />
+              {teamDistributionType === "SELF_SELECTION" && (
+                <TextField
+                    fullWidth
+                    type="datetime-local"
+                    label="Дедлайн формирования команд"
+                    InputLabelProps={{ shrink: true }}
+                    value={formationDeadline}
+                    onChange={(e) => setFormationDeadline(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+              )}
 
               <TextField
                 fullWidth

@@ -211,35 +211,64 @@ export const EditPostPage = () => {
 
           {isTeam && (
             <>
-              <Select fullWidth value={teamDistributionType}
+                <Select
+                fullWidth
+                value={teamDistributionType}
                 onChange={e => setTeamDistributionType(e.target.value as any)}
-                sx={{ mb: 2 }}>
-                <MenuItem value="MANUAL">Ручное</MenuItem>
-                <MenuItem value="RANDOM">Случайное</MenuItem>
-                <MenuItem value="SELF_SELECTION">Самостоятельное</MenuItem>
-              </Select>
+                sx={{ mb: 2 }}
+                >
+                <MenuItem value="MANUAL">Ручное распределение (преподавателем)</MenuItem>
+                <MenuItem value="RANDOM">Случайное распределение</MenuItem>
+                <MenuItem value="SELF_SELECTION">
+                    Самостоятельное формирование (студентами)
+                </MenuItem>
+                </Select>
 
-              <TextField fullWidth label="Мин. команд"
+                {teamDistributionType === "SELF_SELECTION" && (
+                <TextField
+                    fullWidth
+                    type="datetime-local"
+                    label="Дедлайн формирования команд"
+                    InputLabelProps={{ shrink: true }}
+                    value={formationDeadline}
+                    onChange={e => setFormationDeadline(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+                )}
+
+                <TextField
+                fullWidth
+                label="Мин. команд"
                 value={minTeamsCount}
                 onChange={e => setMinTeamsCount(Number(e.target.value))}
-                sx={{ mb: 2 }} />
+                sx={{ mb: 2 }}
+                />
 
-              <TextField fullWidth label="Макс. команд"
+                <TextField
+                fullWidth
+                label="Макс. команд"
                 value={maxTeamsCount}
                 onChange={e => setMaxTeamsCount(Number(e.target.value))}
-                sx={{ mb: 2 }} />
+                sx={{ mb: 2 }}
+                />
 
-              <TextField fullWidth label="Мин. участников"
+                <TextField
+                fullWidth
+                label="Мин. участников"
                 value={minMembersPerTeam}
                 onChange={e => setMinMembersPerTeam(Number(e.target.value))}
-                sx={{ mb: 2 }} />
+                sx={{ mb: 2 }}
+                />
 
-              <TextField fullWidth label="Макс. участников"
+                <TextField
+                fullWidth
+                label="Макс. участников"
                 value={maxMembersPerTeam}
                 onChange={e => setMaxMembersPerTeam(Number(e.target.value))}
-                sx={{ mb: 2 }} />
+                sx={{ mb: 2 }}
+                />
             </>
-          )}
+            )}
         </>
       )}
 
