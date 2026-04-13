@@ -14,6 +14,7 @@ export const StudentPerformanceBlock: React.FC<Props> = ({ studentId }) => {
       try {
         const result = await getStudentPerformance(studentId);
         setData(result);
+        console.log(result);
       } catch (err) {
         console.error(err);
       } finally {
