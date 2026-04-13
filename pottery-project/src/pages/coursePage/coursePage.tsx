@@ -4,15 +4,12 @@ import type { Post, PostType, PostsResponse } from "../../shared/lib/api/posts";
 import { PostCard } from "../../entities/post/PostCard";
 import { useNavigate } from "react-router-dom";
 import { fetchPosts } from "../../shared/lib/api/posts";
-import { CreatePostForm } from "../../features/createPostForm/createPostForm"
 
 export const PostsPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [typeFilter, setTypeFilter] = useState<PostType | "ALL">("ALL");
-
-  const [openForm, setOpenForm] = useState(false);
 
   const pageSize = 6;
   const navigate = useNavigate();
@@ -58,7 +55,7 @@ export const PostsPage = () => {
               variant="contained"
               sx={{ mt: 3 }}
               fullWidth
-              onClick={() => setOpenForm(true)}
+              onClick={() => navigate("/posts/create")}
             >
               Создать пост
             </Button>
@@ -92,11 +89,6 @@ export const PostsPage = () => {
                 />
               </Box>
             )}
-            <CreatePostForm
-              open={openForm}
-              onClose={() => setOpenForm(false)}
-              onPostCreated={loadPosts}
-            />
           </Box>
         </Grid>
       </Grid>

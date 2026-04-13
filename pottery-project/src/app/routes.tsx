@@ -9,6 +9,7 @@ import { ProfilePage } from '../pages/profilePage/ProfilePage';
 import { SolutionsPage } from "../pages/solutionsPage/SolutionsPage";
 import { SolutionPage } from "../pages/solutionPage/SolutionPage";
 import { PostPage } from "../pages/postPage/postPage.tsx";
+import { CreatePostPage } from "../pages/createPostPage/CreatePostPage";
 
 export const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ export const AppRoutes = () => {
         <Route path="*" element={<h1>Страница не найдена</h1>} />
         <Route path="/error-500" element={<Error500Page />} />
         <Route path="/profile/student/:id" element={<StudentProfilePage />} />
+        <Route path="/posts/create" element={<CreatePostPage />} />
       </Route>
     </Routes>
   );

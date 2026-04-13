@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Chip } from "@mui/material";
-import type { PostsResponse, PostType } from "../../shared/lib/api/post";
+import type { PostsResponse } from "../../shared/lib/api/post";
 
 type Props = {
   post: PostsResponse;
@@ -34,7 +34,7 @@ export const PostCard = ({ post }: Props) => {
         </Typography>
         )}
         {post.task ? (      
-          <Typography variant="h9">{"Назначенная дата:"}</Typography>
+          <Typography>{"Назначенная дата:"}</Typography>
         ): (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
         </Typography>

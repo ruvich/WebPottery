@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '../../testUtils';
 import { ProfilePage } from './ProfilePage'; 
 
