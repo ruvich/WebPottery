@@ -86,6 +86,7 @@ export const PostsPage = () => {
                       <PostCard
                         post={post}
                         canDelete={role === "TEACHER"}
+                        canEdit={role === "TEACHER"}
                         onDelete={handleDelete}
                       />
                     </Grid>
