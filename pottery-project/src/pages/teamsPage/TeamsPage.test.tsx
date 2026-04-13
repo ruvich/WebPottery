@@ -44,10 +44,11 @@ beforeEach(() => {
 
   (postApi.fetchPostById as jest.Mock).mockResolvedValue({
     task: {
-      teamRules: {
+        teamDistributionType: "SELF_SELECTION",
+        teamRules: {
         maxMembersPerTeam: 5,
         formationDeadline: new Date(Date.now() + 1000000).toISOString(),
-      },
+        },
     },
   });
 
@@ -98,8 +99,7 @@ describe("TeamsPage", () => {
 
     const joinButtons = screen.getAllByRole("button", { name: /вступить/i });
 
-    fireEvent.click(joinButtons[0]); // нажимаем первую
-
+    fireEvent.click(joinButtons[0]);
     await waitFor(() => {
         expect(teamsApi.joinTeam).toHaveBeenCalled();
     });
@@ -140,12 +140,13 @@ describe("TeamsPage", () => {
 
   test("блокирует действия после дедлайна", async () => {
     (postApi.fetchPostById as jest.Mock).mockResolvedValue({
-      task: {
-        teamRules: {
-          maxMembersPerTeam: 5,
-          formationDeadline: new Date(Date.now() - 100000).toISOString(),
+        task: {
+            teamDistributionType: "SELF_SELECTION",
+            teamRules: {
+            maxMembersPerTeam: 5,
+            formationDeadline: new Date(Date.now() - 100000).toISOString(),
+            },
         },
-      },
     });
 
     render(<TeamsPage />);
