@@ -11,6 +11,7 @@ import { SolutionPage } from "../pages/solutionPage/SolutionPage";
 import { PostPage } from "../pages/postPage/postPage.tsx";
 import { CreatePostPage } from "../pages/createPostPage/CreatePostPage";
 import { EditPostPage } from "../pages/editPostPage/EditPostPage";
+import { TeamsPage } from "../pages/teamsPage/TeamsPage";
 
 export const AppRoutes = () => {
   return (
@@ -30,13 +31,8 @@ export const AppRoutes = () => {
         <Route path="/profile/student/:id" element={<StudentProfilePage />} />
         <Route path="/posts/create" element={<CreatePostPage />} />
         <Route path="/posts/:postId/edit" element={<EditPostPage />} />
+        <Route path="/posts/:postId/teams" element={<TeamsPage />} />
       </Route>
     </Routes>
   );
 };
-
-
-
-
-
-
