@@ -21,11 +21,20 @@ export const editSolution = async (data: EditSolutionRequest, solutionID: string
 
 export const submitSolution = async (data: boolean, solutionID: string) => {
   const token = localStorage.getItem("accessToken");
-  const response = await axios.post("http://localhost:8080/api/solutions/" + solutionID + "/submit", data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return response.data;
+  
+  if(data){
+    const response = await axios.post("http://localhost:8080/api/solutions/" + solutionID + "/submit", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }else{
+    const response = await axios.delete("http://localhost:8080/api/solutions/" + solutionID + "/unsubmit", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }
 };

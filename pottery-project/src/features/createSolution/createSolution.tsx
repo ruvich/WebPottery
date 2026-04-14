@@ -29,14 +29,20 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
     try {
       const data: CreateSolutionResponse = await getMySolution(postID);
       setText(data.text);
-      setUrl(data.videoUrl);
-      setSubmit(data.submit);
-      setOldSubmit(data.submit);      
+      setUrl(data.videoUrl);     
       setSolutionID(data.id);
+
       if(data.id == null){
         setCreated(false);
       }else{
         setCreated(true);
+        if(data.status == 'SUBMITTED'){
+          setSubmit(true);
+          setOldSubmit(true); 
+        }else{    
+          setSubmit(false);
+          setOldSubmit(false); 
+        }
       }
     } catch (e) {
       console.error("GET MY SOLUTION ERROR", e);
@@ -54,27 +60,26 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
         await editSolution(body, solutionID);
         console.log("Solution EDITED", body);
         setError("");
-
         setText("");
         setUrl("");
         onPostCreated();
         onClose();
-        getSolution();
       } catch (e) {
         console.error("EDIT SOLUTION ERROR", e);
         setError("Ошибка изменения решения");
       }
 
       if(submit != oldSubmit){
-       try {
-        await submitSolution(submit, solutionID);
-        console.log("Submit EDITED", body);
-        setError("");
-      } catch (e) {
-        console.error("EDIT SUBMIT ERROR", e);
-        setError("Ошибка изменения статуса решения");
-      } 
+        try {
+          await submitSolution(submit, solutionID);
+          console.log("Submit EDITED", body);
+          setError("");
+        } catch (e) {
+          console.error("EDIT SUBMIT ERROR", e);
+          setError("Ошибка изменения статуса решения");
+        } 
       }
+      getSolution();
     }
     else{
       try {
