@@ -8,6 +8,7 @@ export type TeamMember = {
 export type Team = {
   id: string;
   name: string;
+  captainId: string | null;
   members: TeamMember[];
 };
 
@@ -78,3 +79,105 @@ export const leaveTeam = async (postId: string, teamId: string): Promise<Team> =
   return response.data;
 };
 
+export const addStudentToTeam = async (
+  postId: string,
+  teamId: string,
+  studentId: string
+): Promise<Team> => {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await axios.post(
+    `http://localhost:8080/api/posts/${postId}/teams/${teamId}/members/${studentId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const removeStudentFromTeam = async (
+  postId: string,
+  teamId: string,
+  studentId: string
+): Promise<void> => {
+  const token = localStorage.getItem("accessToken");
+
+  await axios.delete(
+    `http://localhost:8080/api/posts/${postId}/teams/${teamId}/members/${studentId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export type TeamCreateRequest = {
+  name: string;
+  captainId: string | null;
+  memberIds: string[] | null;
+};
+
+export const createTeam = async (
+  postId: string,
+  request: TeamCreateRequest
+): Promise<Team> => {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await axios.post(
+    `http://localhost:8080/api/posts/${postId}/teams`,
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const deleteTeam = async (
+  postId: string,
+  teamId: string
+): Promise<void> => {
+  const token = localStorage.getItem("accessToken");
+
+  await axios.delete(
+    `http://localhost:8080/api/posts/${postId}/teams/${teamId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export type TeamUpdateRequest = {
+  name?: string;
+  captainId: string | null;
+};
+
+export const updateTeam = async (
+  postId: string,
+  teamId: string,
+  request: TeamUpdateRequest
+): Promise<Team> => {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await axios.patch(
+    `http://localhost:8080/api/posts/${postId}/teams/${teamId}`,
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
