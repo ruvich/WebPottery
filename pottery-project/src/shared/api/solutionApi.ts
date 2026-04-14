@@ -27,7 +27,13 @@ async function fetchWithLog<T>(
   console.group(`🌐 Solution API: ${options.method} ${url}`);
   console.log('Full URL:', fullUrl);
   console.log('Token present:', !!token);
-  console.log('Request body:', options.body ? JSON.parse(options.body as string) : undefined);
+  if (options.body) {
+    try {
+      console.log('Request body:', JSON.parse(options.body as string));
+    } catch {
+      console.log('Request body:', options.body);
+    }
+  }
   console.groupEnd();
 
   try {
@@ -52,7 +58,9 @@ async function fetchWithLog<T>(
     }
 
     const data = await response.json();
-    return data;
+    console.log('📦 Response data:', data); // Логируем полученные данные
+    
+    return data as T;
   } catch (error) {
     console.error('❌ API Error:', error);
     throw error;
@@ -60,7 +68,6 @@ async function fetchWithLog<T>(
 }
 
 export const solutionApi = {
-
   getSolutionById: async (
     solutionId: string,
     customToken?: string
@@ -82,7 +89,6 @@ export const solutionApi = {
       token
     );
   },
-
 
   gradeSolution: async (
     solutionId: string,

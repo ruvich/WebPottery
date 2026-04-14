@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react'; 
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { solutionApi } from '../../shared/api/solutionApi';
-// import { solutionsApi } from '../../shared/api/types/solutionApi';
 import type { Solution } from '../../shared/api/types/solutionApi';
-import { SolutionDetails } from '../../entities/solution//SolutionDetails';
-import { GradingPanel } from '../../features/grading//GradingPanel';
+import { SolutionDetails } from '../../entities/solution/SolutionDetails';
+import { GradingPanel } from '../../features/grading/GradingPanel';
 import styles from './SolutionPage.module.css';
 
 export const SolutionPage: React.FC = () => {
@@ -19,7 +18,7 @@ export const SolutionPage: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setAuthError(true);
       setTimeout(() => navigate('/login'), 3000);
@@ -35,8 +34,8 @@ export const SolutionPage: React.FC = () => {
       console.log(`📥 Loading solution: ${solutionId}`);
       
       const data = await solutionApi.getSolutionById(solutionId);
-      setSolution(data);
       console.log('✅ Solution loaded:', data);
+      setSolution(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось загрузить решение';
       setError(message);
@@ -48,7 +47,8 @@ export const SolutionPage: React.FC = () => {
 
   useEffect(() => {
     fetchSolution();
-  }, [fetchSolution, refreshKey]); 
+  }, [fetchSolution, refreshKey]);
+
   const handleGradeSubmit = async (score: number, comment: string) => {
     if (!solutionId || !solution) return;
 
@@ -60,13 +60,14 @@ export const SolutionPage: React.FC = () => {
       
       await solutionApi.gradeSolution(solutionId, {
         score,
-        teacherComment: comment || undefined
+        teacherComment: comment || null
       });
       
       setIsEditing(false);
       
+      // Перезагружаем данные
       console.log('🔄 Reloading solution data...');
-      await fetchSolution(); 
+      await fetchSolution();
       
       console.log('✅ Grade submitted and data reloaded');
     } catch (err) {
@@ -79,7 +80,46 @@ export const SolutionPage: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1); 
+    setRefreshKey(prev => prev + 1);
+  };
+
+  // Вычисляем текущую оценку (teamGrade или средняя из memberGrades)
+  const getCurrentGrade = (): number | null => {
+    if (!solution) return null;
+    
+    // Если есть teamGrade, используем его
+    if (solution.teamGrade !== null && solution.teamGrade !== undefined) {
+      return solution.teamGrade;
+    }
+    
+    // Иначе берем последнюю оценку из memberGrades
+    if (solution.memberGrades && solution.memberGrades.length > 0) {
+      return solution.memberGrades[solution.memberGrades.length - 1].score;
+    }
+    
+    return null;
+  };
+
+  const getTeacherComment = (): string => {
+    if (!solution) return '';
+    
+    // Ищем комментарий в memberGrades
+    if (solution.memberGrades && solution.memberGrades.length > 0) {
+      const lastGrade = solution.memberGrades[solution.memberGrades.length - 1];
+      return lastGrade.teacherComment || '';
+    }
+    
+    return '';
+  };
+
+  const getGradedAt = (): string | null => {
+    if (!solution) return null;
+    
+    if (solution.memberGrades && solution.memberGrades.length > 0) {
+      return solution.memberGrades[solution.memberGrades.length - 1].gradedAt;
+    }
+    
+    return null;
   };
 
   if (authError) {
@@ -122,7 +162,10 @@ export const SolutionPage: React.FC = () => {
     );
   }
 
-  const hasGrade = !!solution.grade;
+  const currentGrade = getCurrentGrade();
+  const hasGrade = currentGrade !== null;
+  const teacherComment = getTeacherComment();
+  const gradedAt = getGradedAt();
 
   return (
     <div className={styles.page}>
@@ -130,7 +173,6 @@ export const SolutionPage: React.FC = () => {
         <Link to={`/posts/${solution.postId}/solutions`} className={styles.backButton}>
           ← Назад к списку решений
         </Link>
-        {}
         <button onClick={handleRefresh} className={styles.refreshButton}>
           🔄 Обновить
         </button>
@@ -154,17 +196,19 @@ export const SolutionPage: React.FC = () => {
                 <div className={styles.gradeHeader}>
                   <div className={styles.gradeInfo}>
                     <span className={styles.gradeLabel}>Текущая оценка:</span>
-                    <span className={styles.gradeValue}>{solution.grade!.score}/5</span>
+                    <span className={styles.gradeValue}>{currentGrade}/5</span>
                   </div>
-                  <span className={styles.gradeDate}>
-                    {new Date(solution.grade!.gradedAt).toLocaleDateString('ru-RU')}
-                  </span>
+                  {gradedAt && (
+                    <span className={styles.gradeDate}>
+                      {new Date(gradedAt).toLocaleDateString('ru-RU')}
+                    </span>
+                  )}
                 </div>
                 
-                {solution.grade!.teacherComment && (
+                {teacherComment && (
                   <div className={styles.commentBox}>
                     <div className={styles.commentLabel}>Комментарий:</div>
-                    <p className={styles.commentText}>{solution.grade!.teacherComment}</p>
+                    <p className={styles.commentText}>{teacherComment}</p>
                   </div>
                 )}
 
@@ -178,10 +222,9 @@ export const SolutionPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            // Режим редактирования
             <GradingPanel
-              initialScore={solution.grade?.score || 3}
-              initialComment={solution.grade?.teacherComment || ''}
+              initialScore={currentGrade || 3}
+              initialComment={teacherComment}
               onSubmit={handleGradeSubmit}
               onCancel={hasGrade ? () => setIsEditing(false) : undefined}
               isSubmitting={isSubmitting}
