@@ -1,4 +1,9 @@
-import type { Solution, GradeSolutionRequest } from './types/solutionApi';
+import type { 
+  Solution, 
+  GradeTeamRequest, 
+  GradeMemberRequest,
+  MemberGrade
+} from './types/solutionApi';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 const getToken = (): string | undefined => {
@@ -58,7 +63,7 @@ async function fetchWithLog<T>(
     }
 
     const data = await response.json();
-    console.log('📦 Response data:', data); // Логируем полученные данные
+    console.log('📦 Response data:', data);
     
     return data as T;
   } catch (error) {
@@ -68,6 +73,7 @@ async function fetchWithLog<T>(
 }
 
 export const solutionApi = {
+  // Получить решение по ID
   getSolutionById: async (
     solutionId: string,
     customToken?: string
@@ -90,9 +96,10 @@ export const solutionApi = {
     );
   },
 
-  gradeSolution: async (
+  // Оценка команде (общая оценка за решение)
+  gradeTeam: async (
     solutionId: string,
-    data: GradeSolutionRequest,
+    data: GradeTeamRequest,
     customToken?: string
   ): Promise<Solution> => {
     const token = customToken || getToken();
@@ -101,14 +108,62 @@ export const solutionApi = {
       throw new Error('Authorization token is required');
     }
 
-    console.log(`⭐ Grading solution ${solutionId} with score ${data.score}`);
+    console.log(`⭐ Grading team for solution ${solutionId} with score ${data.score}`);
     
     return fetchWithLog<Solution>(
       `/solutions/${solutionId}/grade`,
       {
+        method: 'PUT',  // или POST, проверьте спецификацию
+        headers: createHeaders(token),
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  // Индивидуальная оценка студента в команде
+  gradeMember: async (
+    solutionId: string,
+    studentId: string,
+    data: GradeMemberRequest,
+    customToken?: string
+  ): Promise<Solution> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`⭐ Grading member ${studentId} for solution ${solutionId} with score ${data.score}`);
+    
+    return fetchWithLog<Solution>(
+      `/solutions/${solutionId}/members/${studentId}/grade`,
+      {
         method: 'PUT',
         headers: createHeaders(token),
         body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  getSolutionMembers: async (
+    solutionId: string,
+    customToken?: string
+  ): Promise<{ studentId: string; studentName: string; grade?: MemberGrade }[]> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`👥 Fetching members for solution ${solutionId}`);
+    
+    return fetchWithLog<{ studentId: string; studentName: string; grade?: MemberGrade }[]>(
+      `/solutions/${solutionId}/members`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
       },
       token
     );
