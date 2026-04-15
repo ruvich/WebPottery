@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import  { ProfileCard } from '../../entities/profile/ProfileCard';
 import { EditProfile } from '../../features/EditProfile/EditProfile';
 import { profileApi } from '../../shared/api/profileApi';
-// import { profileApi } from '../../shared/api/api';  // для тестов
 
 import type { UserProfile } from '../../shared/api/types/UserProfile';
 import './ProfilePage.css';
