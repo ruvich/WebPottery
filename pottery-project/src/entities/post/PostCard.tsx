@@ -58,7 +58,7 @@ export const PostCard = ({ post, canDelete, canEdit, onDelete }: Props) => {
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           {post.description}
         </Typography>
-
+        
         <Typography variant="caption" display="block" sx={{ mt: 2 }}>
           {new Date(post.createdAt).toLocaleString()}
         </Typography>

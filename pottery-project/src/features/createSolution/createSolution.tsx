@@ -5,6 +5,8 @@ import { createSolution } from "../../shared/lib/api/Solution/createSolution";
 import { getMySolution } from "../../shared/lib/api/Solution/getMySolution";
 import { editSolution } from "../../shared/lib/api/Solution/editSolution";
 import { submitSolution } from "../../shared/lib/api/Solution/editSolution";
+import { getMyTeamID } from "../../shared/lib/api/Solution/getMyTeamID";
+import type {GetTeamIdResponse} from "../../shared/lib/api/Solution/getMyTeamID"
 import { useParams } from "react-router-dom";
 
 
@@ -20,6 +22,7 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
   const [solutionID, setSolutionID] = useState("");
   const [url, setUrl] = useState("");
   const [submit, setSubmit] = useState(false);
+  const [teamId, setTeamId] = useState("");
   const [oldSubmit, setOldSubmit] = useState(false);
   const [created, setCreated] = useState(false);
   const [error, setError] = useState("");
@@ -48,12 +51,21 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
       console.error("GET MY SOLUTION ERROR", e);
       setError("Видимо решений у тебя нет");
     }
+
+    try {
+      const data: GetTeamIdResponse = await getMyTeamID(postID);
+      setTeamId(data.id);
+      
+    } catch (e) {
+      console.error("GET TEAM ERROR", e);
+      setError("Ошибка создания решения");
+    }
   };
 
   const handleSubmit = async () => {    
     if (!text.trim()) return setError("Описание решения обязательно");
     if (!url.trim()) return setError("Ссылка на видио обязательна");
-    const body = { text, videoUrl: url, submit};
+    const body = { text, videoUrl: url, submit, teamId};
      
     if(created){
       try {
