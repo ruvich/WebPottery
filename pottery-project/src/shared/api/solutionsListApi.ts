@@ -89,14 +89,14 @@ export const solutionsListApi = {
     customToken?: string
   ): Promise<Solution[]> => {
     const token = customToken || getToken();
-    
+    /*
     const queryParams = new URLSearchParams();
     if (params.status) {
       queryParams.append('status', params.status);
     }
     
-    const queryString = queryParams.toString();
-    const url = `/posts/${params.postId}/solutions${queryString ? `?${queryString}` : ''}`;
+    const queryString = queryParams.toString();*/
+    const url = `/posts/${params.postId}/solutions?selectedOnly=true`;
     
     console.log(`🔍 Fetching solutions for post ${params.postId}${params.status ? ` with status ${params.status}` : ''}`);
     

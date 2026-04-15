@@ -162,7 +162,15 @@ export const PostCard = ({ post }: Props) => {
                 {post.task.mode === "TEAM" ? "Групповое" : "Индивидуальное"}
               </Typography>
             )}
-
+            
+            {post.type === "TASK" && post.task.mode === "TEAM" &&(
+              <Typography variant="body2" sx={{ color: "#000000" }}>
+                <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>
+                  Тип приоритетного решения:
+                </Box>{" "}
+                {post.task.prioritySolution}
+              </Typography>
+            )}
             {role !== "TEACHER" && post.type === "TASK" && (
               <Box
                 sx={{
