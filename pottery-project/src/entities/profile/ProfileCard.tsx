@@ -21,10 +21,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => 
       </div>
       
       <div className="profile-info">
-        <div className="info-item">
-          <span className="info-label">ID:</span>
-          <span className="info-value">{profile.userId}</span>
-        </div>
+
         
         <div className="info-item about-item">
           <span className="info-label">О себе:</span>

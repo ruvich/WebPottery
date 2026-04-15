@@ -1,186 +1,391 @@
-/* src/pages/solutionPage/SolutionPage.module.css */
+/* SolutionPage.module.css */
+
 .page {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  padding: 40px 20px;
 }
 
 .header {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.backButton,
+.refreshButton {
+  padding: 10px 20px;
   background: white;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.backButton {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  color: #6c757d;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.backButton:hover {
-  background: #e9ecef;
-  color: #1976d2;
+.backButton:hover,
+.refreshButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-.gradingSection {
-  margin-top: 2rem;
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Секции */
+.gradingSection,
+.memberGradingSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
 }
 
 .sectionTitle {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.5rem;
-  color: #333;
+  font-size: 22px;
   font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.sectionTitle::before {
+  content: "📊";
+  font-size: 24px;
+}
+
+.memberGradingSection .sectionTitle::before {
+  content: "👥";
+}
+
+/* Карточка оценки команды */
 .gradeDisplay {
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  padding: 20px;
 }
 
 .gradeCard {
-  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
 }
 
 .gradeHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .gradeInfo {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: baseline;
+  gap: 12px;
 }
 
 .gradeLabel {
-  color: #6c757d;
-  font-size: 1rem;
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
 }
 
 .gradeValue {
-  font-size: 2rem;
+  font-size: 28px;
   font-weight: 700;
-  color: #1976d2;
+  color: #27ae60;
+}
+
+.gradeValue::before {
+  content: "⭐ ";
+  font-size: 24px;
 }
 
 .gradeDate {
-  color: #6c757d;
-  font-size: 0.875rem;
-  background: #e9ecef;
-  padding: 0.35rem 1rem;
-  border-radius: 20px;
+  font-size: 12px;
+  color: #95a5a6;
 }
 
 .commentBox {
-  background: white;
-  padding: 1.5rem;
+  background: #f8f9fa;
+  padding: 16px;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
-  border-left: 4px solid #ffc107;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 16px 0;
 }
 
 .commentLabel {
-  margin-bottom: 0.75rem;
-  color: #6c757d;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7f8c8d;
+  margin-bottom: 8px;
 }
 
 .commentText {
+  font-size: 14px;
+  color: #2c3e50;
+  line-height: 1.5;
   margin: 0;
-  color: #333;
-  line-height: 1.6;
-  font-size: 1rem;
-  white-space: pre-wrap;
 }
 
+/* Кнопки */
 .editButton {
-  width: 100%;
-  padding: 1rem;
-  background: #1976d2;
+  padding: 8px 16px;
+  background: #3498db;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .editButton:hover:not(:disabled) {
-  background: #1565c0;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+  background: #2980b9;
+  transform: translateY(-1px);
 }
 
 .editButton:disabled {
-  opacity: 0.5;
+  background: #bdc3c7;
   cursor: not-allowed;
 }
 
+/* Индивидуальные оценки */
+.memberGradesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.memberGradeCard {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.memberGradeCard:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
+}
+
+.memberInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.memberName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.memberName strong {
+  background: #e8f4f8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.memberGrade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.memberGrade .gradeLabel {
+  font-size: 13px;
+  margin: 0;
+}
+
+.memberGrade .gradeValue {
+  font-size: 18px;
+}
+
+.gradeMeta {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.memberComment {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+}
+
+.memberComment strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #856404;
+  font-size: 13px;
+}
+
+.memberComment p {
+  margin: 0;
+  font-size: 14px;
+  color: #856404;
+  line-height: 1.4;
+}
+
+/* Форма оценки */
+.memberGradingForm {
+  margin-top: 24px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.memberGradingForm h3 {
+  font-size: 18px;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Загрузка и ошибки */
 .loading,
 .error {
   text-align: center;
-  padding: 4rem;
-  color: #6c757d;
-  font-size: 1.2rem;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 24px;
+  max-width: 500px;
+  margin: 40px auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+  color: #667eea;
+  font-size: 18px;
 }
 
 .error {
-  color: #dc3545;
+  color: #e74c3c;
 }
 
-.backLink {
-  display: inline-block;
-  margin-top: 1.5rem;
-  padding: 0.75rem 2rem;
-  color: #1976d2;
-  text-decoration: none;
-  border: 2px solid #1976d2;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  background: white;
-  cursor: pointer;
-  font-weight: 500;
+.error h2 {
+  margin-bottom: 16px;
 }
 
-.backLink:hover {
-  background: #1976d2;
+.button {
+  padding: 10px 20px;
+  background: #667eea;
   color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 16px;
+  margin-right: 12px;
+  transition: all 0.3s ease;
 }
 
+.button:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+}
+
+.errorMessage {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
+  .page {
+    padding: 20px 12px;
   }
 
-  .gradeHeader {
+  .container {
+    padding: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .backButton,
+  .refreshButton {
+    justify-content: center;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+  }
+
+  .gradeValue {
+    font-size: 22px;
+  }
+
+  .memberInfo {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
   }
+
+  .gradeMeta {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .memberGradeCard:hover {
+    transform: translateX(0);
+  }
+}
+
+/* Анимации */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container,
+.gradeDisplay,
+.memberGradeCard {
+  animation: slideIn 0.3s ease-out;
 }
