@@ -1,35 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import {   Box,
-  Typography,
-  Card,
-  CardContent,
-  CircularProgress,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Checkbox,
-  FormControlLabel,
-  Radio,
-  RadioGroup, } from "@mui/material";
-
-import {
-  getTeamDetails,
-  joinTeam,
-  leaveTeam,
-  addStudentToTeam,
-  removeStudentFromTeam,
-  createTeam,
-  deleteTeam,
-  updateTeam,
-} from "../../shared/lib/api/teams";
+import { useParams, Link} from "react-router-dom";
+import styles from '../solutionsPage/SolutionsPage.module.css';
+import { Box, Typography, Card, CardContent, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormControlLabel, Radio, RadioGroup, } from "@mui/material";
+import { getTeamDetails, joinTeam, leaveTeam, addStudentToTeam, removeStudentFromTeam, createTeam, deleteTeam, updateTeam,} from "../../shared/lib/api/teams";
 import type { Team } from "../../shared/lib/api/teams";
-
 import { getStudents } from "../../shared/lib/api/studentsList";
 import type { Student } from "../../shared/lib/api/studentsList";
-
 import { fetchPostById } from "../../shared/lib/api/createPost";
 
 export const TeamsPage = () => {
@@ -315,6 +291,11 @@ export const TeamsPage = () => {
             gap: 2,
           }}
         >
+          <div className={styles.header}>
+            <Link to={`/posts/${postId}`} className={styles.backButton}>
+              ← Назад к заданию
+            </Link>
+          </div>
           <Typography variant="h5">Команды</Typography>
 
           {isTeacherTeamManagement && (
