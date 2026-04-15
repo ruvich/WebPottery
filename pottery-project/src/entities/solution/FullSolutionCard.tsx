@@ -12,8 +12,8 @@ export const SolutionCard = ({ solution: solution }: Props) => {
     const vote = async () => {  
         try {
             await voteSolution(solution.id);
-            
-            } catch (e) {
+            window.location.reload();
+        } catch (e) {
             console.error("VOTE SOLUTION ERROR", e);
             setError("Ошибка голосования решения");
         }

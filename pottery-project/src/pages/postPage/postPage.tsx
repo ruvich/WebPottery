@@ -3,8 +3,6 @@ import { Box, Grid, Typography, Button } from "@mui/material";
 import { PostCard } from "../../entities/post/FullPostCard";
 import { fetchPost } from "../../shared/lib/api/post";
 import type { PostsResponse } from "../../shared/lib/api/post";
-import { fetchSelectedSolution } from "../../shared/lib/api/Grade/getGrade";
-import { fetchGrade } from "../../shared/lib/api/Grade/getGrade";
 import { CreateSolution } from "../../features/createSolution/createSolution";
 import { VoteSolution } from "../../features/voteSolution/voteSolution";
 import { CommentsList } from "../../features/comment/commentList";
@@ -15,8 +13,6 @@ export const PostPage = () => {
     const [post, setPost] = useState<PostsResponse | null>(null);
     const [openFormCreate, setOpenFormCreate] = useState(false);
     const [openFormVote, setOpenFormVote] = useState(false);
-    const [score, setScore] = useState<number | null>(null);
-
     const navigate = useNavigate();
     const role = localStorage.getItem("userRole");
     const currentUserId = localStorage.getItem("userId");
@@ -26,30 +22,7 @@ export const PostPage = () => {
         try {
             const data: PostsResponse = await fetchPost(postID);
             setPost(data);
-            if (role !== "TEACHER" && data?.type === "TASK") {
-                try {
-                    const studentId = localStorage.getItem("userId");
-
-                    const selectedSolution = await fetchSelectedSolution(postID);
-
-                    if (!selectedSolution || !studentId) {
-                    setScore(null);
-                    return;
-                    }
-
-                    const grade = await fetchGrade(selectedSolution.id, studentId);
-
-                    if (!grade) {
-                    setScore(null);
-                    return;
-                    }
-
-                    setScore(grade.score);
-
-                } catch {
-                    setScore(null);
-                }
-            }
+            
         } catch (err: any) {
             const status = err.response?.status;
             if (status === 401) navigate("/login");
@@ -82,18 +55,7 @@ export const PostPage = () => {
                             </Link>
                         </div>
                     )}
-                    {post?.type === "TASK" && (
-                      <Typography variant="body2">
-                          Тип задания: {post.task.mode === "TEAM" ? "Групповое" : "Индивидуальное"}
-                      </Typography>
-                    )}  
-                    {role !== "TEACHER" && post?.type === "TASK" && (
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2">
-                        Оценка: {score !== null ? score : "Оценка отсутствует"}
-                        </Typography>
-                    </Box>
-                    )}
+                    
                     {role !== "TEACHER" && post?.type === "TASK" &&(
                         <Button
                             variant="contained"
