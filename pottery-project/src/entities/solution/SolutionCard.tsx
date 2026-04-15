@@ -1,5 +1,7 @@
-import React from 'react';
+// SolutionCard.tsx
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { studentApi } from '../../shared/api/studentApi';
 import type { Solution } from '../../shared/api/types/solutionsApi';
 import styles from './SolutionCard.module.css';
 
@@ -8,6 +10,25 @@ interface SolutionCardProps {
 }
 
 export const SolutionCard: React.FC<SolutionCardProps> = ({ solution }) => {
+  const [studentName, setStudentName] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStudentName = async () => {
+      try {
+        const student = await studentApi.getStudentById(solution.studentId);
+        setStudentName(student.profile.fullName);
+      } catch (error) {
+        console.error('Failed to fetch student name:', error);
+        setStudentName(`${solution.studentId.slice(0, 8)}...`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentName();
+  }, [solution.studentId]);
+
   const getStatusLabel = (status: string) => {
     return status === 'SUBMITTED' ? 'Отправлено' : 'Черновик';
   };
@@ -30,7 +51,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution }) => {
     <Link to={`/solutions/${solution.id}`} className={styles.card}>
       <div className={styles.header}>
         <span className={styles.studentId}>
-          Студент: {solution.studentId.slice(0, 8)}...
+          {loading ? 'Загрузка...' : studentName}
         </span>
         <span className={`${styles.status} ${getStatusClass(solution.status)}`}>
           {getStatusLabel(solution.status)}
