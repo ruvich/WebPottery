@@ -1,9 +1,12 @@
 import axios from "axios";
 
+export type SubmitType = "SUBMITTED" | "DRAFT";
+
 export interface CreateSolutionResponse {
+  id: string;
   text: string;
   videoUrl: string;  
-  submit: boolean;
+  status: SubmitType;
 }
 
 export const getMySolution = async (id: string): Promise<CreateSolutionResponse> => {

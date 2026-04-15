@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export interface CreateSolutionRequest {
+  teamID: string;
   text: string;
   videoUrl: string;
   submit: boolean;
