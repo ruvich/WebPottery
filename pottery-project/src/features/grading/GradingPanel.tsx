@@ -1,8 +1,8 @@
-// src/features/grading/ui/GradingPanel/GradingPanel.tsx
 import React, { useState } from 'react';
 import styles from './GradingPanel.module.css';
 
 interface GradingPanelProps {
+  title?: string;
   initialScore?: number;
   initialComment?: string;
   onSubmit: (score: number, comment: string) => void;

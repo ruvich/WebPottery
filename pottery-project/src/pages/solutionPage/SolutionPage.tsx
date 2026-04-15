@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react'; 
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { solutionApi } from '../../shared/api/solutionApi';
-import type { Solution } from '../../shared/api/types/solutionApi';
+import { studentApi } from '../../shared/api/studentApi';
+import type { Solution, MemberGrade } from '../../shared/api/types/solutionApi';
 import { SolutionDetails } from '../../entities/solution/SolutionDetails';
 import { GradingPanel } from '../../features/grading/GradingPanel';
 import styles from './SolutionPage.module.css';
@@ -12,10 +13,13 @@ export const SolutionPage: React.FC = () => {
   const [solution, setSolution] = useState<Solution | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingTeamGrade, setIsEditingTeamGrade] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedStudentForGrade, setSelectedStudentForGrade] = useState<string | null>(null);
+  
+  const [studentNames, setStudentNames] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -36,6 +40,15 @@ export const SolutionPage: React.FC = () => {
       const data = await solutionApi.getSolutionById(solutionId);
       console.log('✅ Solution loaded:', data);
       setSolution(data);
+      
+      // Загружаем имена студентов для memberGrades
+      if (data.memberGrades && data.memberGrades.length > 0) {
+        const studentIds = data.memberGrades.map(grade => grade.studentId);
+        const uniqueStudentIds = [...new Set(studentIds)]; // Убираем дубликаты
+        const namesMap = await studentApi.getStudentsByIds(uniqueStudentIds);
+        setStudentNames(namesMap);
+      }
+      
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось загрузить решение';
       setError(message);
@@ -49,31 +62,55 @@ export const SolutionPage: React.FC = () => {
     fetchSolution();
   }, [fetchSolution, refreshKey]);
 
-  const handleGradeSubmit = async (score: number, comment: string) => {
+  const handleTeamGradeSubmit = async (score: number, comment: string) => {
     if (!solutionId || !solution) return;
 
     try {
       setIsSubmitting(true);
       setError(null);
       
-      console.log(`📤 Submitting grade: ${score} for solution ${solutionId}`);
+      console.log(`📤 Submitting team grade: ${score} for solution ${solutionId}`);
       
-      await solutionApi.gradeSolution(solutionId, {
+      await solutionApi.gradeTeam(solutionId, {
         score,
         teacherComment: comment || null
       });
       
-      setIsEditing(false);
-      
-      // Перезагружаем данные
-      console.log('🔄 Reloading solution data...');
+      setIsEditingTeamGrade(false);
       await fetchSolution();
       
-      console.log('✅ Grade submitted and data reloaded');
+      console.log('✅ Team grade submitted');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку';
+      const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку команде';
       setError(message);
-      console.error('❌ Error submitting grade:', err);
+      console.error('❌ Error submitting team grade:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMemberGradeSubmit = async (studentId: string, score: number, comment: string) => {
+    if (!solutionId || !solution) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      console.log(`📤 Submitting member grade: ${score} for student ${studentId}`);
+      
+      await solutionApi.gradeMember(solutionId, studentId, {
+        score,
+        teacherComment: comment || null
+      });
+      
+      setSelectedStudentForGrade(null);
+      await fetchSolution();
+      
+      console.log('✅ Member grade submitted');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку студенту';
+      setError(message);
+      console.error('❌ Error submitting member grade:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -83,43 +120,13 @@ export const SolutionPage: React.FC = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  // Вычисляем текущую оценку (teamGrade или средняя из memberGrades)
-  const getCurrentGrade = (): number | null => {
-    if (!solution) return null;
-    
-    // Если есть teamGrade, используем его
-    if (solution.teamGrade !== null && solution.teamGrade !== undefined) {
-      return solution.teamGrade;
-    }
-    
-    // Иначе берем последнюю оценку из memberGrades
-    if (solution.memberGrades && solution.memberGrades.length > 0) {
-      return solution.memberGrades[solution.memberGrades.length - 1].score;
-    }
-    
-    return null;
+  const getMemberGrade = (studentId: string): MemberGrade | undefined => {
+    if (!solution?.memberGrades) return undefined;
+    return solution.memberGrades.find(grade => grade.studentId === studentId);
   };
 
-  const getTeacherComment = (): string => {
-    if (!solution) return '';
-    
-    // Ищем комментарий в memberGrades
-    if (solution.memberGrades && solution.memberGrades.length > 0) {
-      const lastGrade = solution.memberGrades[solution.memberGrades.length - 1];
-      return lastGrade.teacherComment || '';
-    }
-    
-    return '';
-  };
-
-  const getGradedAt = (): string | null => {
-    if (!solution) return null;
-    
-    if (solution.memberGrades && solution.memberGrades.length > 0) {
-      return solution.memberGrades[solution.memberGrades.length - 1].gradedAt;
-    }
-    
-    return null;
+  const getStudentName = (studentId: string): string => {
+    return studentNames.get(studentId) || `${studentId.substring(0, 8)}...`;
   };
 
   if (authError) {
@@ -162,10 +169,7 @@ export const SolutionPage: React.FC = () => {
     );
   }
 
-  const currentGrade = getCurrentGrade();
-  const hasGrade = currentGrade !== null;
-  const teacherComment = getTeacherComment();
-  const gradedAt = getGradedAt();
+  const hasTeamGrade = solution.teamGrade !== null && solution.teamGrade !== undefined;
 
   return (
     <div className={styles.page}>
@@ -181,39 +185,21 @@ export const SolutionPage: React.FC = () => {
       <div className={styles.container}>
         <SolutionDetails solution={solution} />
 
+        {/* Блок оценки команды */}
         <div className={styles.gradingSection}>
-          <h2 className={styles.sectionTitle}>Оценка</h2>
+          <h2 className={styles.sectionTitle}>Оценка команды</h2>
           
-          {error && (
-            <div className={styles.errorMessage}>
-              {error}
-            </div>
-          )}
-          
-          {hasGrade && !isEditing ? (
+          {hasTeamGrade && !isEditingTeamGrade ? (
             <div className={styles.gradeDisplay}>
               <div className={styles.gradeCard}>
                 <div className={styles.gradeHeader}>
                   <div className={styles.gradeInfo}>
-                    <span className={styles.gradeLabel}>Текущая оценка:</span>
-                    <span className={styles.gradeValue}>{currentGrade}/5</span>
+                    <span className={styles.gradeLabel}>Оценка команды:</span>
+                    <span className={styles.gradeValue}>{solution.teamGrade}/5</span>
                   </div>
-                  {gradedAt && (
-                    <span className={styles.gradeDate}>
-                      {new Date(gradedAt).toLocaleDateString('ru-RU')}
-                    </span>
-                  )}
                 </div>
-                
-                {teacherComment && (
-                  <div className={styles.commentBox}>
-                    <div className={styles.commentLabel}>Комментарий:</div>
-                    <p className={styles.commentText}>{teacherComment}</p>
-                  </div>
-                )}
-
                 <button 
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => setIsEditingTeamGrade(true)}
                   className={styles.editButton}
                   disabled={isSubmitting}
                 >
@@ -223,14 +209,79 @@ export const SolutionPage: React.FC = () => {
             </div>
           ) : (
             <GradingPanel
-              initialScore={currentGrade || 3}
-              initialComment={teacherComment}
-              onSubmit={handleGradeSubmit}
-              onCancel={hasGrade ? () => setIsEditing(false) : undefined}
+              initialScore={solution.teamGrade || 3}
+              initialComment=""
+              onSubmit={handleTeamGradeSubmit}
+              onCancel={hasTeamGrade ? () => setIsEditingTeamGrade(false) : undefined}
               isSubmitting={isSubmitting}
             />
           )}
         </div>
+
+        {/* Блок индивидуальных оценок участников */}
+        {solution.ownerType === 'TEAM' && solution.memberGrades && solution.memberGrades.length > 0 && (
+          <div className={styles.memberGradingSection}>
+            <h2 className={styles.sectionTitle}>Индивидуальные оценки участников</h2>
+            
+            <div className={styles.memberGradesList}>
+              {solution.memberGrades.map((grade) => (
+                <div key={grade.studentId} className={styles.memberGradeCard}>
+                  <div className={styles.memberInfo}>
+                    <div className={styles.memberName}>
+                      <strong>{getStudentName(grade.studentId)}</strong>
+                    </div>
+                    <div className={styles.memberGrade}>
+                      <span className={styles.gradeLabel}>Оценка:</span>
+                      <span className={styles.gradeValue}>{grade.score}/5</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.gradeMeta}>
+                    <span className={styles.gradeDate}>
+                      Оценена: {new Date(grade.gradedAt).toLocaleDateString('ru-RU')}
+                    </span>
+                    <span className={styles.teacherId}>
+                      {}
+                    </span>
+                  </div>
+                  
+                  {grade.teacherComment && (
+                    <div className={styles.memberComment}>
+                      <strong>Комментарий преподавателя:</strong>
+                      <p>{grade.teacherComment}</p>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => setSelectedStudentForGrade(grade.studentId)}
+                    className={styles.editButton}
+                    disabled={isSubmitting}
+                  >
+                    Изменить оценку
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Форма для оценки конкретного студента */}
+            {selectedStudentForGrade && (
+              <div className={styles.memberGradingForm}>
+                <h3>
+                  Оценка студента: {getStudentName(selectedStudentForGrade)}
+                </h3>
+                <GradingPanel
+                  initialScore={getMemberGrade(selectedStudentForGrade)?.score || 3}
+                  initialComment={getMemberGrade(selectedStudentForGrade)?.teacherComment || ''}
+                  onSubmit={(score, comment) => 
+                    handleMemberGradeSubmit(selectedStudentForGrade, score, comment)
+                  }
+                  onCancel={() => setSelectedStudentForGrade(null)}
+                  isSubmitting={isSubmitting}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
