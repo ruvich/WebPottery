@@ -54,6 +54,16 @@ export const PostPage = () => {
               Прикрепить/изменить решение
             </Button>
           )}
+          {role !== "TEACHER" && post?.task?.prioritySolution == "VOTING" &&(
+            <Button
+              variant="contained"
+              sx={{ mt: 3 }}
+              fullWidth
+              onClick={() => setOpenForm(true)}
+            >
+              Проголосовать за решение
+            </Button>
+          )}
           {role === "TEACHER" && post?.type == "TASK" &&(
             <div className={styles.header}>
               <Link to={`/posts/${postID}/solutions`} className={styles.backButton}>

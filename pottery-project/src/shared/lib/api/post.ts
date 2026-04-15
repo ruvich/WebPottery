@@ -4,6 +4,10 @@ export type PostType = "MATERIAL" | "TASK";
 
 export type MaterialType = "LINK" | "TEXT";
 
+export type TaskType = "SOLO" | "TEAM";
+
+export type SolutionType = "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
+
 export interface Material {
   type: MaterialType;
   title: string;
@@ -14,6 +18,8 @@ export interface Material {
 export interface 	TaskDetails {
   description: string;
   deadline: string;
+  mode: TaskType;
+  prioritySolution: SolutionType;
 }
 
 export interface PostsResponse {
