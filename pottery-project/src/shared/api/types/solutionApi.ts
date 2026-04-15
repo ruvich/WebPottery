@@ -1,6 +1,3 @@
-// types/solutionApi.ts
-
-// Информация об оценке члена команды
 export interface MemberGrade {
   gradedAt: string;
   score: number;
@@ -10,20 +7,19 @@ export interface MemberGrade {
   teacherId: string;
 }
 
-// Основной интерфейс Solution (соответствует реальным данным)
 export interface Solution {
   id: string;
   attachmentUrl: string;
   authorStudentId: string;
   createdAt: string;
-  memberGrades: MemberGrade[];  // массив оценок членов команды
+  memberGrades: MemberGrade[]; 
   ownerType: 'STUDENT' | 'TEAM';
   postId: string;
   status: 'DRAFT' | 'SUBMITTED';
   studentId: string;
   studentName: string | null;
   submittedAt: string;
-  teamGrade: number | null;  // ⚠️ teamGrade - это число, а не объект!
+  teamGrade: number | null;  
   teamId: string;
   text: string;
   updatedAt: string;
@@ -31,13 +27,16 @@ export interface Solution {
   votesCount: number;
 }
 
-// Запрос на оценку решения
-export interface GradeSolutionRequest {
+export interface GradeTeamRequest {
   score: number;
   teacherComment?: string | null;
 }
 
-// Если нужно создать новое решение
+export interface GradeMemberRequest {
+  score: number;
+  teacherComment?: string | null;
+}
+
 export interface CreateSolutionRequest {
   postId: string;
   text: string;
