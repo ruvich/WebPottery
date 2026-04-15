@@ -70,15 +70,10 @@ export const PostCard = ({ post }: Props) => {
           Без доп. материала
         </Typography>
         )}
-        {post.task ? (      
-          <Typography variant="h9">{"Назначенная дата:"}</Typography>
-        ): (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-        </Typography>
-        )}
+        
         {post.task ? (      
           <Typography variant="caption" display="block" sx={{ mt: 2 }}>
-            {new Date(post.task.deadline).toLocaleString()}
+            Назначенная дата: {new Date(post.task.deadline).toLocaleString()}
           </Typography>
         ): (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
