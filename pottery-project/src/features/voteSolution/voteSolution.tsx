@@ -1,126 +1,61 @@
 import { useEffect, useState } from "react";
-import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from "@mui/material";
-import type {CreateSolutionResponse} from "../../shared/lib/api/Solution/getMySolution"
-import { createSolution } from "../../shared/lib/api/Solution/createSolution";
-import { getMySolution } from "../../shared/lib/api/Solution/getMySolution";
-import { editSolution } from "../../shared/lib/api/Solution/editSolution";
-import { submitSolution } from "../../shared/lib/api/Solution/editSolution";
+import { Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Alert } from "@mui/material";
+import type {Solution} from "../../shared/lib/api/Solution/getTeamSolution"
+import { getMyTeamSolution } from "../../shared/lib/api/Solution/getTeamSolution";
+import { SolutionCard } from "../../entities/solution/FullSolutionCard";
+
 import { useParams } from "react-router-dom";
 
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onPostCreated: () => void;
 };
 
-export const VoteSolution = ({ open, onClose, onPostCreated }: Props) => {
+export const VoteSolution = ({ open, onClose }: Props) => {
   const postID = useParams().postId;
-  const [text, setText] = useState("");
-  const [solutionID, setSolutionID] = useState("");
-  const [url, setUrl] = useState("");
-  const [submit, setSubmit] = useState(false);
-  const [oldSubmit, setOldSubmit] = useState(false);
-  const [created, setCreated] = useState(false);
+  const [solutions, setSolutions] = useState<Solution[]>([]);
   const [error, setError] = useState("");
 
-  const getSolution = async () => { 
-      
+  const getSolution = async () => {       
     try {
-      const data: CreateSolutionResponse = await getMySolution(postID);
-      setText(data.text);
-      setUrl(data.videoUrl);     
-      setSolutionID(data.id);
-
-      if(data.id == null){
-        setCreated(false);
-      }else{
-        setCreated(true);
-        if(data.status == 'SUBMITTED'){
-          setSubmit(true);
-          setOldSubmit(true); 
-        }else{    
-          setSubmit(false);
-          setOldSubmit(false); 
-        }
-      }
+      const data: Solution[] = await getMyTeamSolution(postID);
+      setSolutions(data);
     } catch (e) {
-      console.error("GET MY SOLUTION ERROR", e);
-      setError("Видимо решений у тебя нет");
+      console.error("GET MY TEAM SOLUTION ERROR", e);
+      setError("Ошибка получения решениё команды");
     }
+    console.log(solutions);
   };
 
-  const handleSubmit = async () => {    
-    if (!text.trim()) return setError("Описание решения обязательно");
-    if (!url.trim()) return setError("Ссылка на видио обязательна");
-    const body = { text, videoUrl: url, submit};
-     
-    if(created){
-      try {
-        await editSolution(body, solutionID);
-        console.log("Solution EDITED", body);
-        setError("");
-        setText("");
-        setUrl("");
-        onPostCreated();
-        onClose();
-      } catch (e) {
-        console.error("EDIT SOLUTION ERROR", e);
-        setError("Ошибка изменения решения");
-      }
-
-      if(submit != oldSubmit){
-        try {
-          await submitSolution(submit, solutionID);
-          console.log("Submit EDITED", body);
-          setError("");
-        } catch (e) {
-          console.error("EDIT SUBMIT ERROR", e);
-          setError("Ошибка изменения статуса решения");
-        } 
-      }
-      getSolution();
-    }
-    else{
-      try {
-        await createSolution(body, postID);
-        console.log("Solution CREATED", body);
-        setError("");
-
-        setText("");
-        setUrl("");
-        onPostCreated();
-        onClose();
-        getSolution();
-      } catch (e) {
-        console.error("CREATE SOLUTION ERROR", e);
-        setError("Ошибка создания решения");
-      }
-    }
-  };
   useEffect(() => {
-      getSolution();
-    }, []);
-  
+    getSolution();
+  }, []);  
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Прикрепить/изменить решение</DialogTitle>
+      <DialogTitle>Выбирете наилучшее решение</DialogTitle>
 
       <DialogContent>
         <Box sx={{ mt:1 }}>
           {error && <Alert severity="error" sx={{ mb:2 }}>{error}</Alert>}
-          <TextField fullWidth label="Основной текст" value={text} onChange={e=>setText(e.target.value)} sx={{ mb:2 }} />
-          <TextField fullWidth label="Ссылка на видео" value={url} onChange={e=>setUrl(e.target.value)} sx={{ mb:2 }} />
-          <DialogContent>
-          <p>{submit ? 'Сдать' : 'Сдать позже'}</p>
-          <input type="checkbox" checked={submit} onChange={(e) => setSubmit(e.target.checked)}/>
-          </DialogContent>
+          {solutions.length === 0 ? (
+            <Typography variant="body1" sx={{ textAlign: "center", mt: 4 }}>
+              Решения не найдены
+            </Typography>
+          ) : (
+            <Grid container spacing={2}>
+              {solutions.map(solution => (
+                <Grid size={{ xs: 12 }} key={solution.id}>
+                  <SolutionCard solution={solution} />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Box>
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleSubmit}>Отправить</Button>
         <Button variant="outlined" onClick={onClose}>Отмена</Button>
       </DialogActions>
     </Dialog>

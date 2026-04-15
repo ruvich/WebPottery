@@ -6,13 +6,15 @@ import type { PostsResponse } from "../../shared/lib/api/post";
 import { fetchSelectedSolution } from "../../shared/lib/api/Grade/getGrade";
 import { fetchGrade } from "../../shared/lib/api/Grade/getGrade";
 import { CreateSolution } from "../../features/createSolution/createSolution";
+import { VoteSolution } from "../../features/voteSolution/voteSolution";
 import { CommentsList } from "../../features/comment/commentList";
 import { useParams, Link, useNavigate} from "react-router-dom";
 import styles from '../solutionPage/SolutionPage.module.css';
 
 export const PostPage = () => {
     const [post, setPost] = useState<PostsResponse | null>(null);
-    const [openForm, setOpenForm] = useState(false);
+    const [openFormCreate, setOpenFormCreate] = useState(false);
+    const [openFormVote, setOpenFormVote] = useState(false);
     const [score, setScore] = useState<number | null>(null);
 
     const navigate = useNavigate();
@@ -97,7 +99,7 @@ export const PostPage = () => {
                             variant="contained"
                             sx={{ mt: 3 }}
                             fullWidth
-                            onClick={() => setOpenForm(true)}
+                            onClick={() => setOpenFormCreate(true)}
                         >
                             Прикрепить/изменить решение
                         </Button>
@@ -107,7 +109,7 @@ export const PostPage = () => {
                         variant="contained"
                         sx={{ mt: 3 }}
                         fullWidth
-                        onClick={() => setOpenForm(true)}
+                        onClick={() => setOpenFormVote(true)}
                       >
                         Проголосовать за решение
                       </Button>
@@ -131,9 +133,13 @@ export const PostPage = () => {
                         <CommentsList postId={postID} currentUserId={currentUserId} />
 
                         <CreateSolution
-                            open={openForm}
-                            onClose={() => setOpenForm(false)}
+                            open={openFormCreate}
+                            onClose={() => setOpenFormCreate(false)}
                             onPostCreated={loadPost}
+                        />
+                        <VoteSolution
+                            open={openFormVote}
+                            onClose={() => setOpenFormVote(false)}
                         />
                     </Box>
                 </Grid>
