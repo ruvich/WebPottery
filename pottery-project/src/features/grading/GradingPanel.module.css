@@ -1,125 +1,222 @@
-.panel {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 2rem;
-  border: 1px solid #e0e0e0;
+/* features/grading/GradingPanel.module.css */
+
+.gradingPanel {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 16px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.sliderContainer {
-  margin-bottom: 2rem;
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-.label {
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formGroup label {
   display: block;
-  margin-bottom: 1rem;
-  color: #333;
+  font-size: 14px;
   font-weight: 500;
-  font-size: 1.1rem;
-}
-
-.score {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1976d2;
-  margin-left: 0.5rem;
+  color: #495057;
+  margin-bottom: 12px;
 }
 
 .slider {
   width: 100%;
   height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(to right, #ff9800, #4caf50, #2196f3);
-  outline: none;
   -webkit-appearance: none;
+  appearance: none;
+  background: #e0e0e0;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
+  appearance: none;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #1976d2;
+  background: #667eea;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
 }
 
 .slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  background: #1565c0;
 }
 
-.scoreLabels {
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  border: none;
+}
+
+.slider:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Стили для звездочек */
+.stars {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.star {
+  font-size: 28px;
+  cursor: pointer;
+  color: #d1d5da;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.starActive {
+  color: #fbbf24;
+}
+
+.starActive:hover {
+  color: #f59e0b;
+}
+
+/* Информация об оценке */
+.scoreInfo {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.75rem;
+  align-items: center;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.scoreValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.scoreLabel {
+  font-size: 13px;
   color: #6c757d;
-  font-size: 0.875rem;
-  font-weight: 500;
 }
 
-.commentContainer {
-  margin-bottom: 2rem;
-}
-
+/* Текстовое поле */
 .textarea {
   width: 100%;
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
+  padding: 12px;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  transition: all 0.2s ease;
-  background: white;
+  transition: all 0.2s;
 }
 
 .textarea:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.textarea::placeholder {
-  color: #adb5bd;
-}
-
+/* Кнопки */
 .actions {
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.submitButton,
+.cancelButton {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .submitButton {
-  padding: 0.75rem 2rem;
-  background: #1976d2;
+  background: linear-gradient(135deg, #667eea 0%, #4592f6 100%);
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.submitButton:hover {
-  background: #1565c0;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .cancelButton {
-  padding: 0.75rem 2rem;
-  background: white;
-  color: #6c757d;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: #e74c3c;
+  color: white;
 }
 
-.cancelButton:hover {
-  background: #f8f9fa;
-  border-color: #ced4da;
+.cancelButton:hover:not(:disabled) {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .gradingPanel {
+    padding: 16px;
+  }
+  
+  .star {
+    font-size: 24px;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .scoreInfo {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+/* Анимация */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gradingPanel {
+  animation: slideIn 0.3s ease-out;
 }
