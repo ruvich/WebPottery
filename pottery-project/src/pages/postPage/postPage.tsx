@@ -39,6 +39,11 @@ export const PostPage = () => {
       
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, md: 3 }}>
+          <div className={styles.header}>
+            <Link to={`/posts/${postID}/teams`} className={styles.backButton}>
+              К списку всех команд →
+            </Link>
+          </div>
           {role !== "TEACHER" && post?.type == "TASK" &&(
             <Button
               variant="contained"
@@ -56,6 +61,7 @@ export const PostPage = () => {
               </Link>
             </div>
           )}
+          
         </Grid>
 
         <Grid size={{ xs: 12, md: 9 }}>
