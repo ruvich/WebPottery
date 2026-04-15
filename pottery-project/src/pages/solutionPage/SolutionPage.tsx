@@ -41,10 +41,9 @@ export const SolutionPage: React.FC = () => {
       console.log('✅ Solution loaded:', data);
       setSolution(data);
       
-      // Загружаем имена студентов для memberGrades
       if (data.memberGrades && data.memberGrades.length > 0) {
         const studentIds = data.memberGrades.map(grade => grade.studentId);
-        const uniqueStudentIds = [...new Set(studentIds)]; // Убираем дубликаты
+        const uniqueStudentIds = [...new Set(studentIds)];
         const namesMap = await studentApi.getStudentsByIds(uniqueStudentIds);
         setStudentNames(namesMap);
       }
@@ -62,7 +61,8 @@ export const SolutionPage: React.FC = () => {
     fetchSolution();
   }, [fetchSolution, refreshKey]);
 
-  const handleTeamGradeSubmit = async (score: number, comment: string) => {
+  // Обработчик оценки команды (БЕЗ комментария)
+  const handleTeamGradeSubmit = async (score: number) => {
     if (!solutionId || !solution) return;
 
     try {
@@ -73,7 +73,7 @@ export const SolutionPage: React.FC = () => {
       
       await solutionApi.gradeTeam(solutionId, {
         score,
-        teacherComment: comment || null
+        teacherComment: null
       });
       
       setIsEditingTeamGrade(false);
@@ -89,7 +89,8 @@ export const SolutionPage: React.FC = () => {
     }
   };
 
-  const handleMemberGradeSubmit = async (studentId: string, score: number, comment: string) => {
+  // Обработчик индивидуальной оценки студента (С комментарием)
+  const handleMemberGradeSubmit = async (studentId: string, score: number, comment?: string) => {
     if (!solutionId || !solution) return;
 
     try {
@@ -185,7 +186,7 @@ export const SolutionPage: React.FC = () => {
       <div className={styles.container}>
         <SolutionDetails solution={solution} />
 
-        {/* Блок оценки команды */}
+        {/* Блок оценки команды - БЕЗ комментария */}
         <div className={styles.gradingSection}>
           <h2 className={styles.sectionTitle}>Оценка команды</h2>
           
@@ -210,15 +211,16 @@ export const SolutionPage: React.FC = () => {
           ) : (
             <GradingPanel
               initialScore={solution.teamGrade || 3}
-              initialComment=""
               onSubmit={handleTeamGradeSubmit}
               onCancel={hasTeamGrade ? () => setIsEditingTeamGrade(false) : undefined}
               isSubmitting={isSubmitting}
+              showComment={false}
+              title="Оценка команды"
             />
           )}
         </div>
 
-        {/* Блок индивидуальных оценок участников */}
+        {/* Блок индивидуальных оценок участников - С комментарием */}
         {solution.ownerType === 'TEAM' && solution.memberGrades && solution.memberGrades.length > 0 && (
           <div className={styles.memberGradingSection}>
             <h2 className={styles.sectionTitle}>Индивидуальные оценки участников</h2>
@@ -239,9 +241,6 @@ export const SolutionPage: React.FC = () => {
                   <div className={styles.gradeMeta}>
                     <span className={styles.gradeDate}>
                       Оценена: {new Date(grade.gradedAt).toLocaleDateString('ru-RU')}
-                    </span>
-                    <span className={styles.teacherId}>
-                      {}
                     </span>
                   </div>
                   
@@ -277,6 +276,7 @@ export const SolutionPage: React.FC = () => {
                   }
                   onCancel={() => setSelectedStudentForGrade(null)}
                   isSubmitting={isSubmitting}
+                  showComment={true}
                 />
               </div>
             )}
