@@ -7,6 +7,31 @@ export type TaskMode = "SOLO" | "TEAM";
 export type TeamDistributionType = "MANUAL" | "RANDOM" | "SELF_SELECTION";
 export type PrioritySolution = "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
 
+export type CriterionType = "POINTS" | "YES_NO" | "PERCENT";
+export type CriterionImpactType = "REGULAR" | "BONUS";
+
+export interface CriterionDto {
+  title: string;
+  description: string;
+  type: CriterionType;
+  maxScore: number;
+  impactType: CriterionImpactType;
+  displayOrder: number;
+}
+
+export interface TaskGradingSettings {
+  enabled: boolean;
+  maxFinalScore: number;
+
+  selfAssessmentRequired: boolean;
+
+  latePenaltyEnabled: boolean;
+  latePenaltyPerDay: number;
+
+  progressPenaltyEnabled: boolean;
+  progressPenaltyPerMiss: number;
+}
+
 export interface CreatePostRequest {
   type: PostType;
   title: string;
@@ -35,6 +60,8 @@ export interface CreatePostRequest {
     } | null;
 
     prioritySolution?: PrioritySolution;
+    gradingSettings?: TaskGradingSettings | null;
+    criteria?: CriterionDto[];
   } | null;
 }
 
@@ -48,6 +75,7 @@ export interface Material {
 export interface Task {
   description?: string | null;
   deadline?: string | null;
+
   mode: "SOLO" | "TEAM";
 
   teamDistributionType?: "MANUAL" | "RANDOM" | "SELF_SELECTION";
@@ -61,6 +89,8 @@ export interface Task {
   };
 
   prioritySolution?: "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
+  gradingSettings?: TaskGradingSettings | null;
+  criteria?: CriterionDto[];
 }
 
 export interface Post {
