@@ -1,8 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
-import { Box, Button, TextField, MenuItem, Select, Typography, Alert } from "@mui/material";
+import {
+  Box, Button, TextField, MenuItem, Select, Typography, Alert,
+  Divider, FormControlLabel, Checkbox
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PostType } from "../../shared/lib/api/posts";
 import { fetchPostById, updatePost } from "../../shared/lib/api/createPost";
+import type { CriterionDto } from "../../shared/lib/api/createPost";
+import { CriteriaSection } from "../../entities/post/CriteriaSection";
 
 export const EditPostPage = () => {
   const { postId } = useParams();
@@ -25,9 +30,11 @@ export const EditPostPage = () => {
   const [taskDescription, setTaskDescription] = useState("");
   const [deadline, setDeadline] = useState("");
 
-  const [teamDistributionType, setTeamDistributionType] = useState<"MANUAL" | "RANDOM" | "SELF_SELECTION">("MANUAL");
+  const [teamDistributionType, setTeamDistributionType] =
+    useState<"MANUAL" | "RANDOM" | "SELF_SELECTION">("MANUAL");
 
-  const [prioritySolution, setPrioritySolution] = useState<"CAPITAIN" | "LAST" | "FIRST" | "VOTING">("CAPITAIN");
+  const [prioritySolution, setPrioritySolution] =
+    useState<"CAPITAIN" | "LAST" | "FIRST" | "VOTING">("CAPITAIN");
 
   const [formationDeadline, setFormationDeadline] = useState("");
 
@@ -36,14 +43,42 @@ export const EditPostPage = () => {
   const [minMembersPerTeam, setMinMembersPerTeam] = useState(1);
   const [maxMembersPerTeam, setMaxMembersPerTeam] = useState(5);
 
+  const [gradingEnabled, setGradingEnabled] = useState(false);
+  const [maxFinalScore, setMaxFinalScore] = useState(10);
+  const [selfAssessmentRequired, setSelfAssessmentRequired] = useState(false);
+  const [latePenaltyEnabled, setLatePenaltyEnabled] = useState(false);
+  const [latePenaltyPerDay, setLatePenaltyPerDay] = useState(0);
+  const [progressPenaltyEnabled, setProgressPenaltyEnabled] = useState(false);
+  const [progressPenaltyPerMiss, setProgressPenaltyPerMiss] = useState(0);
+
+  const [criteria, setCriteria] = useState<CriterionDto[]>([]);
+
   const isTeam = taskMode === "TEAM";
 
+  const toNumber = (v: string) => (v.replace(/\D/g, "") === "" ? 0 : Number(v.replace(/\D/g, "")));
+
+  const handleMinTeams = (v: number) => { 
+    setMinTeamsCount(v); 
+    if (v > maxTeamsCount) setMaxTeamsCount(v); 
+  };
+
+  const handleMaxTeams = (v: number) => { 
+    setMaxTeamsCount(v); 
+    if (v < minTeamsCount) setMinTeamsCount(v); 
+  };
+
+  const handleMinMembers = (v: number) => { 
+    setMinMembersPerTeam(v); 
+    if (v > maxMembersPerTeam) setMaxMembersPerTeam(v); 
+  };
+
+  const handleMaxMembers = (v: number) => { 
+    setMaxMembersPerTeam(v); 
+    if (v < minMembersPerTeam) setMinMembersPerTeam(v); 
+  };
+
   useEffect(() => {
-    if (!postId) {
-      setLoading(false);
-      navigate("/error-500");
-      return;
-    }
+    if (!postId) return;
 
     (async () => {
       try {
@@ -77,6 +112,19 @@ export const EditPostPage = () => {
             setMinMembersPerTeam(r.minMembersPerTeam ?? 1);
             setMaxMembersPerTeam(r.maxMembersPerTeam ?? 5);
           }
+
+          const g = d.task.gradingSettings;
+          if (g) {
+            setGradingEnabled(g.enabled);
+            setMaxFinalScore(g.maxFinalScore);
+            setSelfAssessmentRequired(g.selfAssessmentRequired);
+            setLatePenaltyEnabled(g.latePenaltyEnabled);
+            setLatePenaltyPerDay(g.latePenaltyPerDay ?? 0);
+            setProgressPenaltyEnabled(g.progressPenaltyEnabled);
+            setProgressPenaltyPerMiss(g.progressPenaltyPerMiss ?? 0);
+          }
+
+          setCriteria(d.task.criteria ?? []);
         }
       } catch {
         navigate("/error-500");
@@ -88,13 +136,36 @@ export const EditPostPage = () => {
 
   const isInvalid = useMemo(() => {
     if (!title.trim()) return true;
+
     if (isTeam && minTeamsCount > maxTeamsCount) return true;
     if (isTeam && minMembersPerTeam > maxMembersPerTeam) return true;
+
+    if (gradingEnabled && maxFinalScore <= 0) return true;
+    if (gradingEnabled && latePenaltyEnabled && latePenaltyPerDay <= 0) return true;
+    if (gradingEnabled && progressPenaltyEnabled && progressPenaltyPerMiss <= 0) return true;
+
     return false;
-  }, [title, isTeam, minTeamsCount, maxTeamsCount, minMembersPerTeam, maxMembersPerTeam]);
+  }, [
+    title, isTeam,
+    minTeamsCount, maxTeamsCount,
+    minMembersPerTeam, maxMembersPerTeam,
+    gradingEnabled,
+    maxFinalScore,
+    latePenaltyEnabled, latePenaltyPerDay,
+    progressPenaltyEnabled, progressPenaltyPerMiss
+  ]);
 
   const handleSubmit = async () => {
     if (!postId) return;
+
+    setError("");
+    if (!title.trim()) return setError("Название обязательно");
+
+    if (type === "TASK" && gradingEnabled && criteria.length === 0) {
+      setError("Добавьте хотя бы один критерий оценивания");
+      return;
+    }
+
 
     try {
       await updatePost(postId, {
@@ -131,6 +202,20 @@ export const EditPostPage = () => {
                     },
                   }
                 : {}),
+
+              gradingSettings: gradingEnabled
+                ? {
+                    enabled: true,
+                    maxFinalScore,
+                    selfAssessmentRequired,
+                    latePenaltyEnabled,
+                    latePenaltyPerDay,
+                    progressPenaltyEnabled,
+                    progressPenaltyPerMiss,
+                  }
+                : null,
+
+              criteria: gradingEnabled ? criteria : [],
             }
           : null,
       });
@@ -144,28 +229,35 @@ export const EditPostPage = () => {
   if (loading) return <Typography>Загрузка...</Typography>;
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
-      <Typography variant="h5" mb={2}>
+    <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4 }}>
+      <Typography variant="h5" sx={{ mb: 2 }}>
         Редактирование поста
       </Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <Select fullWidth value={type} disabled sx={{ mb: 2 }}>
-        <MenuItem value="MATERIAL">Материал</MenuItem>
-        <MenuItem value="TASK">Задание</MenuItem>
-      </Select>
-
-      <TextField fullWidth label="Название" value={title}
-        onChange={e => setTitle(e.target.value)} sx={{ mb: 2 }} />
-
-      <TextField fullWidth label="Описание" value={description}
-        onChange={e => setDescription(e.target.value)} sx={{ mb: 2 }} />
-
       {type === "MATERIAL" && (
-        <>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+
+          <Select fullWidth value={type} disabled sx={{ mb: 2 }}>
+            <MenuItem value="MATERIAL">Материал</MenuItem>
+            <MenuItem value="TASK">Задание</MenuItem>
+          </Select>
+
+          <TextField fullWidth label="Название"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            sx={{ mb: 2 }} />
+
+          <TextField fullWidth label="Подзаголовок"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            sx={{ mb: 2 }} />
+
           <Select fullWidth value={materialType}
-            onChange={e => setMaterialType(e.target.value as any)} sx={{ mb: 2 }}>
+            onChange={e => setMaterialType(e.target.value as any)}
+            sx={{ mb: 2 }}>
+
             <MenuItem value="LINK">Ссылка</MenuItem>
             <MenuItem value="TEXT">Текст</MenuItem>
           </Select>
@@ -189,39 +281,63 @@ export const EditPostPage = () => {
               onChange={e => setText(e.target.value)}
               sx={{ mb: 2 }} />
           )}
-        </>
+        </Box>
       )}
 
       {type === "TASK" && (
-        <>
-          <TextField fullWidth label="Описание задания"
-            value={taskDescription}
-            onChange={e => setTaskDescription(e.target.value)}
-            sx={{ mb: 2 }} />
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: gradingEnabled ? "1fr 1fr" : "1fr",
+            },
+            gap: 3,
+            alignItems: "start",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
 
-          <TextField fullWidth type="datetime-local"
-            value={deadline}
-            onChange={e => setDeadline(e.target.value)}
-            sx={{ mb: 2 }} />
+            <Select fullWidth value={type} disabled sx={{ mb: 2 }}>
+              <MenuItem value="MATERIAL">Материал</MenuItem>
+              <MenuItem value="TASK">Задание</MenuItem>
+            </Select>
 
-          <Select fullWidth value={taskMode} disabled sx={{ mb: 2 }}>
-            <MenuItem value="SOLO">Индивидуальное</MenuItem>
-            <MenuItem value="TEAM">Командное</MenuItem>
-          </Select>
+            <TextField fullWidth label="Название"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              sx={{ mb: 2 }} />
 
-          {isTeam && (
-            <>
-                <Select
-                fullWidth
-                value={teamDistributionType}
-                onChange={e => setTeamDistributionType(e.target.value as any)}
-                sx={{ mb: 2 }}
-                >
-                <MenuItem value="MANUAL">Ручное распределение (преподавателем)</MenuItem>
-                <MenuItem value="RANDOM">Случайное распределение</MenuItem>
-                <MenuItem value="SELF_SELECTION">
-                    Самостоятельное формирование (студентами)
-                </MenuItem>
+            <TextField fullWidth label="Подзаголовок"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              sx={{ mb: 2 }} />
+
+            <TextField fullWidth label="Описание задания"
+              value={taskDescription}
+              onChange={e => setTaskDescription(e.target.value)}
+              sx={{ mb: 2 }} />
+
+            <TextField fullWidth type="datetime-local"
+              InputLabelProps={{ shrink: true }}
+              value={deadline}
+              onChange={e => setDeadline(e.target.value)}
+              sx={{ mb: 2 }} />
+
+            <Select fullWidth value={taskMode} disabled sx={{ mb: 2 }}>
+              <MenuItem value="SOLO">Индивидуальное</MenuItem>
+              <MenuItem value="TEAM">Командное</MenuItem>
+            </Select>
+
+            {isTeam && (
+              <>
+                <Select fullWidth value={teamDistributionType}
+                  onChange={e => setTeamDistributionType(e.target.value as any)}
+                  sx={{ mb: 2 }}>
+
+                  <MenuItem value="MANUAL">Ручное</MenuItem>
+                  <MenuItem value="RANDOM">Случайное</MenuItem>
+                  <MenuItem value="SELF_SELECTION">Самоорганизация</MenuItem>
                 </Select>
 
                 {teamDistributionType === "SELF_SELECTION" && (
@@ -236,43 +352,153 @@ export const EditPostPage = () => {
                 />
                 )}
 
-                <TextField
-                fullWidth
-                label="Мин. команд"
-                value={minTeamsCount}
-                onChange={e => setMinTeamsCount(Number(e.target.value))}
-                sx={{ mb: 2 }}
-                />
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
+                  <TextField
+                    label="Мин команд"
+                    value={minTeamsCount}
+                    onChange={(e) => handleMinTeams(toNumber(e.target.value))}
+                  />
 
-                <TextField
-                fullWidth
-                label="Макс. команд"
-                value={maxTeamsCount}
-                onChange={e => setMaxTeamsCount(Number(e.target.value))}
-                sx={{ mb: 2 }}
-                />
+                  <TextField
+                    label="Макс команд"
+                    value={maxTeamsCount}
+                    onChange={(e) => handleMaxTeams(toNumber(e.target.value))}
+                  />
 
-                <TextField
-                fullWidth
-                label="Мин. участников"
-                value={minMembersPerTeam}
-                onChange={e => setMinMembersPerTeam(Number(e.target.value))}
-                sx={{ mb: 2 }}
-                />
+                  <TextField
+                    label="Мин участников"
+                    value={minMembersPerTeam}
+                    onChange={(e) => handleMinMembers(toNumber(e.target.value))}
+                  />
 
-                <TextField
-                fullWidth
-                label="Макс. участников"
-                value={maxMembersPerTeam}
-                onChange={e => setMaxMembersPerTeam(Number(e.target.value))}
-                sx={{ mb: 2 }}
-                />
-            </>
+                  <TextField
+                    label="Макс участников"
+                    value={maxMembersPerTeam}
+                    onChange={(e) => handleMaxMembers(toNumber(e.target.value))}
+                  />
+
+                </Box>
+
+                <Select fullWidth value={prioritySolution}
+                  onChange={e => setPrioritySolution(e.target.value as any)}
+                  sx={{ mb: 2 }}>
+
+                  <MenuItem value="CAPITAIN">Капитан</MenuItem>
+                  <MenuItem value="LAST">Последний</MenuItem>
+                  <MenuItem value="FIRST">Первый</MenuItem>
+                  <MenuItem value="VOTING">Голосование</MenuItem>
+                </Select>
+              </>
             )}
-        </>
+
+            <Divider sx={{ my: 2 }} />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={gradingEnabled}
+                  onChange={e => setGradingEnabled(e.target.checked)}
+                />
+              }
+              label="Система критериев оценки"
+            />
+
+            {gradingEnabled && (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+
+                <TextField
+                  type="number"
+                  label="Максимальный балл"
+                  value={maxFinalScore}
+                  onChange={e => setMaxFinalScore(Number(e.target.value))}
+                  error={maxFinalScore <= 0}
+                  helperText={maxFinalScore <= 0 ? "Максимальный балл должен быть больше 0" : ""}
+                />
+
+                <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selfAssessmentRequired}
+                        onChange={e => setSelfAssessmentRequired(e.target.checked)}
+                      />
+                    }
+                    label="Самооценка студента"
+                  />
+                </Box>
+
+                <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={latePenaltyEnabled}
+                        onChange={e => setLatePenaltyEnabled(e.target.checked)}
+                      />
+                    }
+                    label="Штраф за просрочку"
+                  />
+
+                  {latePenaltyEnabled && (
+                    <TextField
+                      fullWidth
+                      sx={{ mt: 1 }}
+                      type="number"
+                      label="Штраф за день"
+                      value={latePenaltyPerDay}
+                      onChange={e => setLatePenaltyPerDay(Number(e.target.value))}
+                      error={latePenaltyPerDay <= 0}
+                      helperText={latePenaltyPerDay <= 0 ? "Штраф должен быть больше 0" : ""}
+                    />
+                  )}
+                </Box>
+
+                <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={progressPenaltyEnabled}
+                        onChange={e => setProgressPenaltyEnabled(e.target.checked)}
+                      />
+                    }
+                    label="Штраф за прогресс"
+                  />
+
+                  {progressPenaltyEnabled && (
+                    <TextField
+                      fullWidth
+                      sx={{ mt: 1 }}
+                      type="number"
+                      label="Штраф за пропуск"
+                      value={progressPenaltyPerMiss}
+                      onChange={e => setProgressPenaltyPerMiss(Number(e.target.value))}
+                      error={progressPenaltyPerMiss <= 0}
+                      helperText={progressPenaltyPerMiss <= 0 ? "Штраф должен быть больше 0" : ""}
+                    />
+                  )}
+                </Box>
+
+                <Divider sx={{ my: 1 }} />
+              </Box>
+            )}
+          </Box>
+
+          {gradingEnabled && (
+            <Box sx={{ position: "sticky", top: 20, height: "fit-content" }}>
+              <CriteriaSection criteria={criteria} setCriteria={setCriteria} />
+            </Box>
+          )}
+        </Box>
       )}
 
-      <Button variant="contained" disabled={isInvalid} onClick={handleSubmit}>Сохранить</Button>
+      <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+        <Button variant="contained" onClick={handleSubmit} disabled={isInvalid}>
+          Сохранить
+        </Button>
+
+        <Button variant="outlined" onClick={() => navigate("/course")}>
+          Отмена
+        </Button>
+      </Box>
     </Box>
   );
 };
