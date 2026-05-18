@@ -73,21 +73,6 @@ export const CreatePostPage = () => {
       return;
     }
 
-    if (gradingEnabled && maxFinalScore <= 0) {
-      setError("Максимальный балл должен быть больше 0");
-      return;
-    }
-
-    if (gradingEnabled && latePenaltyEnabled && latePenaltyPerDay <= 0) {
-      setError("Штраф за просрочку должен быть больше 0");
-      return;
-    }
-
-    if (gradingEnabled && progressPenaltyEnabled && progressPenaltyPerMiss <= 0) {
-      setError("Штраф за пропуск должен быть больше 0");
-      return;
-    }
-
     const body = {
       type,
       title,
@@ -169,6 +154,7 @@ export const CreatePostPage = () => {
           </Select>
 
           <TextField fullWidth label="Название" value={title} onChange={(e) => setTitle(e.target.value)} sx={{ mb: 2 }} />
+
           <TextField fullWidth label="Подзаголовок" value={description} onChange={(e) => setDescription(e.target.value)} sx={{ mb: 2 }} />
 
           <Select fullWidth value={materialType} onChange={(e) => setMaterialType(e.target.value as any)} sx={{ mb: 2 }}>
@@ -192,12 +178,14 @@ export const CreatePostPage = () => {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: gradingEnabled ? "1fr 1fr" : "1fr",
+            },
             gap: 3,
             alignItems: "start",
           }}
         >
-          {/* LEFT */}
           <Box sx={{ display: "flex", flexDirection: "column" }}>
             <Select fullWidth value={type} onChange={(e) => setType(e.target.value as PostType)} sx={{ mb: 2 }}>
               <MenuItem value="MATERIAL">Материал</MenuItem>
@@ -205,6 +193,7 @@ export const CreatePostPage = () => {
             </Select>
 
             <TextField fullWidth label="Название" value={title} onChange={(e) => setTitle(e.target.value)} sx={{ mb: 2 }} />
+
             <TextField fullWidth label="Подзаголовок" value={description} onChange={(e) => setDescription(e.target.value)} sx={{ mb: 2 }} />
 
             <TextField fullWidth label="Описание" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} sx={{ mb: 2 }} />
@@ -245,8 +234,11 @@ export const CreatePostPage = () => {
 
                 <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 2 }}>
                   <TextField label="Мин команд" value={minTeamsCount} onChange={(e) => handleMinTeams(toNumber(e.target.value))} />
+
                   <TextField label="Макс команд" value={maxTeamsCount} onChange={(e) => handleMaxTeams(toNumber(e.target.value))} />
+
                   <TextField label="Мин участников" value={minMembersPerTeam} onChange={(e) => handleMinMembers(toNumber(e.target.value))} />
+
                   <TextField label="Макс участников" value={maxMembersPerTeam} onChange={(e) => handleMaxMembers(toNumber(e.target.value))} />
                 </Box>
 
@@ -274,6 +266,8 @@ export const CreatePostPage = () => {
                   label="Максимальный балл"
                   value={maxFinalScore}
                   onChange={(e) => setMaxFinalScore(Number(e.target.value))}
+                  error={maxFinalScore <= 0}
+                  helperText={maxFinalScore <= 0 ? "Максимальный балл должен быть больше 0" : ""}
                 />
 
                 <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 2 }}>
@@ -288,6 +282,7 @@ export const CreatePostPage = () => {
                     control={<Checkbox checked={latePenaltyEnabled} onChange={(e) => setLatePenaltyEnabled(e.target.checked)} />}
                     label="Штраф за просрочку"
                   />
+
                   {latePenaltyEnabled && (
                     <TextField
                       fullWidth
@@ -296,6 +291,8 @@ export const CreatePostPage = () => {
                       label="Штраф за день"
                       value={latePenaltyPerDay}
                       onChange={(e) => setLatePenaltyPerDay(Number(e.target.value))}
+                      error={latePenaltyPerDay <= 0}
+                      helperText={latePenaltyPerDay <= 0 ? "Штраф должен быть больше 0" : ""}
                     />
                   )}
                 </Box>
@@ -305,6 +302,7 @@ export const CreatePostPage = () => {
                     control={<Checkbox checked={progressPenaltyEnabled} onChange={(e) => setProgressPenaltyEnabled(e.target.checked)} />}
                     label="Штраф за прогресс"
                   />
+
                   {progressPenaltyEnabled && (
                     <TextField
                       fullWidth
@@ -313,6 +311,8 @@ export const CreatePostPage = () => {
                       label="Штраф за пропуск"
                       value={progressPenaltyPerMiss}
                       onChange={(e) => setProgressPenaltyPerMiss(Number(e.target.value))}
+                      error={progressPenaltyPerMiss <= 0}
+                      helperText={progressPenaltyPerMiss <= 0 ? "Штраф должен быть больше 0" : ""}
                     />
                   )}
                 </Box>
@@ -322,9 +322,11 @@ export const CreatePostPage = () => {
             )}
           </Box>
 
-          <Box sx={{ position: "sticky", top: 20, height: "fit-content" }}>
-            <CriteriaSection criteria={criteria} setCriteria={setCriteria} />
-          </Box>
+          {gradingEnabled && (
+            <Box sx={{ position: "sticky", top: 20, height: "fit-content" }}>
+              <CriteriaSection criteria={criteria} setCriteria={setCriteria} />
+            </Box>
+          )}
         </Box>
       )}
 
@@ -332,6 +334,7 @@ export const CreatePostPage = () => {
         <Button variant="contained" onClick={handleSubmit} disabled={isInvalid}>
           Создать
         </Button>
+
         <Button variant="outlined" onClick={() => navigate("/course")}>
           Отмена
         </Button>

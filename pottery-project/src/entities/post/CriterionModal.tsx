@@ -1,15 +1,18 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CriterionDto, CriterionImpactType, CriterionType } from "../../shared/lib/api/createPost";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onAdd: (criterion: CriterionDto) => void;
+  onSave: (criterion: CriterionDto) => void;
   displayOrder: number;
+  initialData?: CriterionDto | null;
 }
 
-export const CriterionModal = ({ open, onClose, onAdd, displayOrder }: Props) => {
+export const CriterionModal = ({ open, onClose, onSave, displayOrder, initialData }: Props) => {
+  const isEdit = Boolean(initialData);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
@@ -20,8 +23,24 @@ export const CriterionModal = ({ open, onClose, onAdd, displayOrder }: Props) =>
   const [impactType, setImpactType] =
     useState<CriterionImpactType>("REGULAR");
 
-  const handleAdd = () => {
-    onAdd({
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description ?? "");
+      setType(initialData.type);
+      setMaxScore(initialData.maxScore);
+      setImpactType(initialData.impactType);
+    } else {
+      setTitle("");
+      setDescription("");
+      setType("POINTS");
+      setMaxScore(1);
+      setImpactType("REGULAR");
+    }
+  }, [initialData, open]);
+
+  const handleSave = () => {
+    onSave({
       title,
       description,
       type,
@@ -30,18 +49,14 @@ export const CriterionModal = ({ open, onClose, onAdd, displayOrder }: Props) =>
       displayOrder,
     });
 
-    setTitle("");
-    setDescription("");
-    setType("POINTS");
-    setMaxScore(1);
-    setImpactType("REGULAR");
-
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Добавление критерия</DialogTitle>
+      <DialogTitle>
+        {isEdit ? "Редактирование критерия" : "Добавление критерия"}
+      </DialogTitle>
 
       <DialogContent>
         <TextField
@@ -74,18 +89,18 @@ export const CriterionModal = ({ open, onClose, onAdd, displayOrder }: Props) =>
         </Select>
 
         <TextField
-            fullWidth
-            type="number"
-            label="Максимальный балл"
-            value={maxScore}
-            onChange={(e) => setMaxScore(Number(e.target.value))}
-            error={maxScore <= 0}
-            helperText={
-                maxScore <= 0
-                ? "Максимальный балл должен быть больше 0"
-                : ""
-            }
-            sx={{ mb: 2 }}
+          fullWidth
+          type="number"
+          label="Максимальный балл"
+          value={maxScore}
+          onChange={(e) => setMaxScore(Number(e.target.value))}
+          error={maxScore <= 0}
+          helperText={
+            maxScore <= 0
+              ? "Максимальный балл должен быть больше 0"
+              : ""
+          }
+          sx={{ mb: 2 }}
         />
 
         <Select
@@ -103,7 +118,13 @@ export const CriterionModal = ({ open, onClose, onAdd, displayOrder }: Props) =>
       <DialogActions>
         <Button onClick={onClose}>Отмена</Button>
 
-        <Button variant="contained" onClick={handleAdd} disabled={!title.trim() || maxScore <= 0}>Добавить</Button>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={!title.trim() || maxScore <= 0}
+        >
+          {isEdit ? "Сохранить" : "Добавить"}
+        </Button>
       </DialogActions>
     </Dialog>
   );

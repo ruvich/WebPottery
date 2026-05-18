@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Button, Typography, Paper, Stack, Chip, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import type { CriterionDto } from "../../shared/lib/api/createPost";
 import { CriterionModal } from "./CriterionModal";
@@ -14,8 +15,21 @@ type Props = {
 export const CriteriaSection = ({ criteria, setCriteria, disabled }: Props) => {
   const [open, setOpen] = useState(false);
 
-  const handleAdd = (c: CriterionDto) => setCriteria([...criteria, c]);
-  const handleRemove = (i: number) => setCriteria(criteria.filter((_, idx) => idx !== i));
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  const handleRemove = (i: number) =>
+    setCriteria(criteria.filter((_, idx) => idx !== i));
+
+  const handleSave = (criterion: CriterionDto) => {
+    if (editingIndex !== null) {
+      const updated = [...criteria];
+      updated[editingIndex] = criterion;
+      setCriteria(updated);
+      setEditingIndex(null);
+      return;
+    }
+    setCriteria([...criteria, criterion]);
+  };
 
   return (
     <Paper sx={{ p: 2, borderRadius: 2 }}>
@@ -30,7 +44,10 @@ export const CriteriaSection = ({ criteria, setCriteria, disabled }: Props) => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setEditingIndex(null);
+            setOpen(true);
+          }}
           disabled={disabled}
         >
           Добавить
@@ -66,22 +83,46 @@ export const CriteriaSection = ({ criteria, setCriteria, disabled }: Props) => {
               </Typography>
             </Box>
 
-            <IconButton
-              onClick={() => handleRemove(i)}
-              disabled={disabled}
-              color="error"
-            >
-              <DeleteIcon />
-            </IconButton>
+            <Box>
+              <IconButton
+                onClick={() => {
+                  setEditingIndex(i);
+                  setOpen(true);
+                }}
+                disabled={disabled}
+              >
+                <EditIcon />
+              </IconButton>
+
+              <IconButton
+                onClick={() => handleRemove(i)}
+                disabled={disabled}
+                color="error"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
           </Paper>
         ))}
       </Stack>
 
       <CriterionModal
         open={open}
-        onClose={() => setOpen(false)}
-        onAdd={handleAdd}
-        displayOrder={criteria.length}
+        onClose={() => {
+          setOpen(false);
+          setEditingIndex(null);
+        }}
+        onSave={handleSave}
+        displayOrder={
+          editingIndex !== null
+            ? editingIndex
+            : criteria.length
+        }
+        initialData={
+          editingIndex !== null
+            ? criteria[editingIndex]
+            : null
+        }
       />
     </Paper>
   );
