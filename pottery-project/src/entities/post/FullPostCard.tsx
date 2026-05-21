@@ -13,31 +13,25 @@ type Props = {
 
 export const PostCard = ({ post }: Props) => {
   const [score, setScore] = useState<number | null>(null);
+  const [solutionID, setSolutionID] = useState<string | null>(null);
   const role = localStorage.getItem("userRole");
   const studentId = localStorage.getItem("userId");
   const postID = useParams().postId;
-  const [solution, setSolution] = useState<CreateSolutionResponse | null>(null);
   
-  const loadPost = async () => {
+    const loadPost = async () => {    
     if (role !== "TEACHER" && post.type === "TASK") {
-      if (post.task.mode === "SOLO") {
-        try {
-          setSolution( await getMySolution(postID));
-        } catch {
-          setScore(null);
-        } 
-      }
-      else{
-        try {
-          setSolution ( await fetchSelectedSolution(postID));
-        } catch {
-          setScore(null);
+      let data1: CreateSolutionResponse;
+      try {
+        if (post.task.mode === "SOLO") {
+          data1 = await getMySolution(postID);
+        } else {
+          data1 = await fetchSelectedSolution(postID);
         }
-      }
-      if(solution != null){
+
+        setSolutionID(data1.id);
         if(post.task.gradingSettings.enabled){
           try {
-            const data: any = await fetchCreterionGrade(solution.id);
+            const data: any = await fetchCreterionGrade(data1.id);
             setScore(data.finalScore);
             return 
           } catch {
@@ -45,17 +39,20 @@ export const PostCard = ({ post }: Props) => {
           } 
         }else{
           try {
-            const data: any = await fetchGrade(solution.id, studentId);
+            const data: any = await fetchGrade(data1.id, studentId);
             setScore(data.score);
             return 
           } catch {
             return 
           } 
         }
-      }
+    }catch {
+      setScore(null);
+    }
+            
     }
   }
-
+  
   useEffect(() => {
       loadPost();
     }, []);
