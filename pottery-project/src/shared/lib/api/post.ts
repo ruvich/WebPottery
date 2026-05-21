@@ -36,6 +36,9 @@ export interface 	TaskCriteria{
   description: string;
   type: CriteriaType;
   maxScore: string;
+  pointsValue: string;
+  booleanValue: boolean;
+  percentValue: string;
   impactType: ImpactCriteriaType;
   displayOrder: string;
 }

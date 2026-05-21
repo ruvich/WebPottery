@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Typography, Stack, FormControlLabel, Switch, Divider,} from "@mui/material";
+import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Stack, Divider,} from "@mui/material";
 import type { PostsResponse } from "../../shared/lib/api/post";
 import { fetchPost } from "../../shared/lib/api/post";
 import { CriteriaCard } from "../../entities/criteria/criteriaCard";
@@ -14,23 +14,23 @@ export const CriteriaListCard = ({ open, onClose }: Props) => {
   const postID = useParams().postId;
   const [post, setPost] = useState<PostsResponse | null>(null);
 
-    const handleClose = () => {
-        onClose();
-    };
+  const handleClose = () => {
+      onClose();
+  };
 
-    const loadPost = async () => {
-        try {
-            const data: PostsResponse = await fetchPost(postID);
-            setPost(data);
-            
-        } catch (err: any) {
-            console.error("Ошибка загрузки поста", err);
-        }
-    };
+  const loadPost = async () => {
+    try {
+        const data: PostsResponse = await fetchPost(postID);
+        setPost(data);
+        
+    } catch (err: any) {
+        console.error("Ошибка загрузки поста", err);
+    }
+  };
 
-    useEffect(() => {
-        loadPost();
-    }, []);
+  useEffect(() => {
+      loadPost();
+  }, []);
  
   return (
     <Dialog
