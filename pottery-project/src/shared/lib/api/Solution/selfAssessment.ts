@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export type CriteriaType = "POINTS" | "YES_NO" | "PERCENT";
 
 export interface SelfAssessment{

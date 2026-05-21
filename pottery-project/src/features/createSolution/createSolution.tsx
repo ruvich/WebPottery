@@ -64,11 +64,11 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
         const data: PostsResponse = await fetchPost(postID);
         setPost(data);
         setCriteria(data.task.criteria);        
+        setSelfAssessment(mapTaskCriteriaToSelfAssessment(criteria));
     } catch (err: any) {
         console.error("Ошибка загрузки поста", err);
-    }
-    setSelfAssessment(mapTaskCriteriaToSelfAssessment(criteria));
-};
+    }    
+  };
 
   const getSolution = async () => {
     if (!postID || !open) return;

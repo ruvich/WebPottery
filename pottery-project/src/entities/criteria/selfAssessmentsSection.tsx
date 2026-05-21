@@ -8,12 +8,12 @@ type Props = {
 
 export const SelfAssessmentSection = ({ selfAssessment: selfAssessment, setSelfAssessment: setSelfAssessment}: Props) => {
     const handleChange = (index: number, field: keyof SelfAssessment, value: any) => {
-        const newArray = [...selfAssessment]; // Создаем копию массива
+        const newArray = [...selfAssessment]; 
         newArray[index] = {
-        ...newArray[index], // Копируем старый объект
-        [field]: value, // Обновляем нужное поле
+        ...newArray[index], 
+        [field]: value, 
         };
-        setSelfAssessment(newArray); // Обновляем состояние
+        setSelfAssessment(newArray);
     };    
 
 
