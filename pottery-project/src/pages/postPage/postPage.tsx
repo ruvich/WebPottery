@@ -5,14 +5,15 @@ import { fetchPost } from "../../shared/lib/api/post";
 import type { PostsResponse } from "../../shared/lib/api/post";
 import { CreateSolution } from "../../features/createSolution/createSolution";
 import { VoteSolution } from "../../features/voteSolution/voteSolution";
+import { CriteriaListCard } from "../../entities/criteria/criteriaListCard";
 import { CommentsList } from "../../features/comment/commentList";
 import { useParams, Link, useNavigate} from "react-router-dom";
-import styles from '../solutionPage/SolutionPage.module.css';
 
 export const PostPage = () => {
     const [post, setPost] = useState<PostsResponse | null>(null);
     const [openFormCreate, setOpenFormCreate] = useState(false);
     const [openFormVote, setOpenFormVote] = useState(false);
+    const [openFormCriteria, setOpenFormCriteria] = useState(false);
     const navigate = useNavigate();
     const role = localStorage.getItem("userRole");
     const currentUserId = localStorage.getItem("userId");
@@ -103,6 +104,28 @@ export const PostPage = () => {
                 </Button>
               )}
 
+              {post?.task?.gradingSettings?.enabled == true && post?.type === "TASK" && (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => setOpenFormCriteria(true)}
+                  sx={{
+                    mt: 1,
+                    py: 1.4,
+                    borderRadius: 3,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    background: "linear-gradient(135deg, #1976d2 0%, #1976d2 100%)",
+                    boxShadow: "0 8px 18px rgba(141, 90, 50, 0.25)",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #4e7cdf 0%, #4e7cdf 100%)",
+                    },
+                  }}
+                >
+                  Просмотреть критерии
+                </Button>
+              )}
+
               {role !== "TEACHER" && post?.type === "TASK" && (
                 <Button
                   variant="contained"
@@ -169,6 +192,11 @@ export const PostPage = () => {
 
             <CommentsList postId={postID!} currentUserId={currentUserId!} />
           </Box>
+
+          <CriteriaListCard
+            open={openFormCriteria}
+            onClose={() => setOpenFormCriteria(false)}
+          />
 
           <CreateSolution
             open={openFormCreate}

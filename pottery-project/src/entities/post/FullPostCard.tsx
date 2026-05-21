@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  Box,
-  Stack,
-  Divider,
-} from "@mui/material";
+import { Card, CardContent, Typography, Chip, Box, Stack, Divider,} from "@mui/material";
 import type { PostsResponse} from "../../shared/lib/api/post";
 import { fetchSelectedSolution } from "../../shared/lib/api/Grade/getGrade";
 import { fetchGrade } from "../../shared/lib/api/Grade/getGrade";
@@ -149,6 +141,13 @@ export const PostCard = ({ post }: Props) => {
           <Stack spacing={1.2}>
             <Typography variant="body2" sx={{ color: "#000000" }}>
               <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>
+                Поставленная задача: 
+              </Box>{" "}
+              {post.task.description}
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: "#000000" }}>
+              <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>
                 Назначенная дата:
               </Box>{" "}
               {new Date(post.task.deadline).toLocaleString()}
@@ -160,6 +159,7 @@ export const PostCard = ({ post }: Props) => {
                   Тип задания:
                 </Box>{" "}
                 {post.task.mode === "TEAM" ? "Групповое" : "Индивидуальное"}
+                {post.task.gradingSettings.enabled === true ? ", Специальные критерии оценивания" : ", Стандартные критерии оценивания"}
               </Typography>
             )}
             

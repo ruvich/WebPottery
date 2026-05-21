@@ -1,25 +1,16 @@
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Typography,
-  Stack,
-  FormControlLabel,
-  Switch,
-  Divider,
-} from "@mui/material";
+import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Typography, Stack, FormControlLabel, Switch, Divider,} from "@mui/material";
 import type { CreateSolutionResponse } from "../../shared/lib/api/Solution/getMySolution";
 import { createSolution } from "../../shared/lib/api/Solution/createSolution";
 import { getMySolution } from "../../shared/lib/api/Solution/getMySolution";
 import { editSolution, submitSolution } from "../../shared/lib/api/Solution/editSolution";
 import { getMyTeamID } from "../../shared/lib/api/Solution/getMyTeamID";
 import type { GetTeamIdResponse } from "../../shared/lib/api/Solution/getMyTeamID";
+import type { PostsResponse } from "../../shared/lib/api/post";
+import type { TaskCriteria } from "../../shared/lib/api/post";
+import type { SelfAssessment } from "../../shared/lib/api/Solution/selfAssessment";
+import { fetchPost } from "../../shared/lib/api/post";
+import { SelfAssessmentSection } from "../../entities/criteria/selfAssessmentsSection";
 import { useParams } from "react-router-dom";
 
 type Props = {
@@ -30,6 +21,7 @@ type Props = {
 
 export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
   const postID = useParams().postId;
+  const [post, setPost] = useState<PostsResponse | null>(null);
 
   const [text, setText] = useState("");
   const [solutionID, setSolutionID] = useState("");
@@ -41,6 +33,9 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [criteria, setCriteria] = useState<TaskCriteria[]>([]);
+  const [selfAssessment, setSelfAssessment] = useState<SelfAssessment[]>([]);
+
   const resetState = () => {
     setError("");
   };
@@ -49,6 +44,31 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
     resetState();
     onClose();
   };
+
+  function mapTaskCriteriaToSelfAssessment(
+      taskCriteriaList: TaskCriteria[]
+    ): SelfAssessment[] {
+      return taskCriteriaList.map((task) => ({
+        criterionId: task.id,
+        title: task.title,
+        valueType: task.type,
+        maxScore: task.maxScore,
+        pointsValue: task.pointsValue,
+        booleanValue: task.booleanValue,
+        percentValue: task.percentValue,
+      }));
+    }
+
+  const loadPost = async () => {
+    try {
+        const data: PostsResponse = await fetchPost(postID);
+        setPost(data);
+        setCriteria(data.task.criteria);        
+    } catch (err: any) {
+        console.error("Ошибка загрузки поста", err);
+    }
+    setSelfAssessment(mapTaskCriteriaToSelfAssessment(criteria));
+};
 
   const getSolution = async () => {
     if (!postID || !open) return;
@@ -110,7 +130,7 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
       return;
     }
 
-    const body = { text, videoUrl: url, submit, teamId };
+    const body = { text, videoUrl: url, submit, teamId, selfAssessment: selfAssessment};
 
     setSaving(true);
     setError("");
@@ -139,6 +159,7 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
   useEffect(() => {
     if (open) {
       getSolution();
+      loadPost();
     }
   }, [open, postID]);
 
@@ -237,6 +258,19 @@ export const CreateSolution = ({ open, onClose, onPostCreated }: Props) => {
               sx={{ alignItems: "flex-start", m: 0 }}
             />
           </Box>
+          {post?.task?.gradingSettings?.enabled == true && post?.task?.gradingSettings?.selfAssessmentRequired == true && (
+            
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                backgroundColor: "#ebf6ff",
+                border: "1px solid rgba(120, 90, 60, 0.08)",
+              }}
+            >
+              <SelfAssessmentSection selfAssessment={selfAssessment} setSelfAssessment={setSelfAssessment} />
+            </Box>
+          )}
         </Stack>
       </DialogContent>
 
