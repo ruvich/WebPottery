@@ -96,7 +96,7 @@ export const solutionsListApi = {
     }
     
     const queryString = queryParams.toString();*/
-    const url = `/posts/${params.postId}/solutions?selectedOnly=true`;
+    const url = `/posts/${params.postId}/solutions`;
     
     console.log(`🔍 Fetching solutions for post ${params.postId}${params.status ? ` with status ${params.status}` : ''}`);
     
@@ -129,7 +129,6 @@ export const solutionsListApi = {
       token
     );
     
-    // API возвращает массив, берем первый элемент
     if (Array.isArray(solutions) && solutions.length > 0) {
       return solutions[0];
     }

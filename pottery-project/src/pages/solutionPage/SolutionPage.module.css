@@ -66,16 +66,12 @@
   gap: 8px;
 }
 
-.sectionTitle::before {
-  content: "📊";
-  font-size: 24px;
-}
+
 
 .memberGradingSection .sectionTitle::before {
   content: "👥";
 }
 
-/* Карточка оценки команды */
 .gradeDisplay {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 16px;
@@ -115,10 +111,7 @@
   color: #27ae60;
 }
 
-.gradeValue::before {
-  content: "⭐ ";
-  font-size: 24px;
-}
+
 
 .gradeDate {
   font-size: 12px;
@@ -145,7 +138,93 @@
   line-height: 1.5;
   margin: 0;
 }
+/* SolutionPage.module.css - дополнения */
 
+.criteriaGradingSection {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.editButton {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.editButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.editButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.criteriaGradeDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.criteriaGradeItem {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.criteriaGradeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.criteriaGradeTitle {
+  font-weight: 500;
+  color: #333;
+}
+
+.criteriaGradeScore {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.criteriaGradeComment {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.progressMissesInfo {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: #fff3cd;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #856404;
+}
+
+.noGradeMessage {
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+  background: white;
+  border-radius: 8px;
+}
 /* Кнопки */
 .editButton {
   padding: 8px 16px;

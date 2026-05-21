@@ -1,11 +1,17 @@
+
 import type { 
   Solution, 
   GradeTeamRequest, 
   GradeMemberRequest,
-  MemberGrade
+  MemberGrade,
+  CriterionGradeRequest,
+  CriterionGradeRequestItem,
+  CriterionGradeResponse,
+  IndividualGradeResponse
 } from './types/solutionApi';
 
 const API_BASE_URL = 'http://localhost:8080/api';
+
 const getToken = (): string | undefined => {
   return localStorage.getItem('accessToken') || undefined;
 };
@@ -29,7 +35,7 @@ async function fetchWithLog<T>(
 ): Promise<T> {
   const fullUrl = `${API_BASE_URL}${url}`;
   
-  console.group(`🌐 Solution API: ${options.method} ${url}`);
+  console.group(`🌐 API: ${options.method} ${url}`);
   console.log('Full URL:', fullUrl);
   console.log('Token present:', !!token);
   if (options.body) {
@@ -96,7 +102,29 @@ export const solutionApi = {
     );
   },
 
-  // Оценка команде (общая оценка за решение)
+  getMemberGrade: async (
+    solutionId: string,
+    studentId: string,
+    customToken?: string
+  ): Promise<IndividualGradeResponse> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`👤 Fetching grade for student ${studentId} in solution ${solutionId}`);
+    
+    return fetchWithLog<IndividualGradeResponse>(
+      `/solutions/${solutionId}/members/${studentId}/grade`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
+      },
+      token
+    );
+  },
+
   gradeTeam: async (
     solutionId: string,
     data: GradeTeamRequest,
@@ -113,7 +141,7 @@ export const solutionApi = {
     return fetchWithLog<Solution>(
       `/solutions/${solutionId}/grade`,
       {
-        method: 'PUT',  // или POST, проверьте спецификацию
+        method: 'PUT',
         headers: createHeaders(token),
         body: JSON.stringify(data),
       },
@@ -121,7 +149,6 @@ export const solutionApi = {
     );
   },
 
-  // Индивидуальная оценка студента в команде
   gradeMember: async (
     solutionId: string,
     studentId: string,
@@ -142,6 +169,52 @@ export const solutionApi = {
         method: 'PUT',
         headers: createHeaders(token),
         body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  gradeByCriteria: async (
+    solutionId: string,
+    data: CriterionGradeRequest,
+    customToken?: string
+  ): Promise<Solution> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`📋 Grading by criteria for solution ${solutionId}`);
+    
+    return fetchWithLog<Solution>(
+      `/solutions/${solutionId}/criterion-grade`,
+      {
+        method: 'PUT',
+        headers: createHeaders(token),
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  getCriterionGrade: async (
+    solutionId: string,
+    customToken?: string
+  ): Promise<CriterionGradeResponse> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`📊 Fetching criterion grade for solution ${solutionId}`);
+    
+    return fetchWithLog<CriterionGradeResponse>(
+      `/solutions/${solutionId}/criterion-grade`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
       },
       token
     );
