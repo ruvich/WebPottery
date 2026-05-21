@@ -17,10 +17,21 @@ export const CriterionGradeDisplay: React.FC<CriterionGradeDisplayProps> = ({ so
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         const result = await solutionApi.getCriterionGrade(solutionId);
         setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load criterion grade');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load criterion grade';
+        
+        if (errorMessage.includes('404') || 
+            errorMessage.includes('not found') || 
+            errorMessage.includes('не найдена')) {
+          console.log('No criterion grade found yet');
+          setData(null);
+          setError(null); 
+        } else {
+          setError(errorMessage);
+        }
       } finally {
         setLoading(false);
       }
@@ -35,8 +46,22 @@ export const CriterionGradeDisplay: React.FC<CriterionGradeDisplayProps> = ({ so
     return <div className={styles.loading}>Загрузка оценок...</div>;
   }
 
-  if (error || !data) {
-    return <div className={styles.error}>Ошибка загрузки: {error}</div>;
+  if (!data) {
+    return (
+      <div className={styles.noData}>
+        <span className={styles.noDataIcon}>📋</span>
+        <p>Оценка по критериям еще не выставлена</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <span className={styles.errorIcon}>⚠️</span>
+        <p>Ошибка загрузки: {error}</p>
+      </div>
+    );
   }
 
   const formatScore = (score: number): string => {
@@ -69,7 +94,7 @@ export const CriterionGradeDisplay: React.FC<CriterionGradeDisplayProps> = ({ so
     <div className={styles.container}>
       <h3 className={styles.title}>📊 Детальная оценка по критериям</h3>
       
-      {}
+      {/* Итоговая информация */}
       <div className={styles.summary}>
         <div className={styles.summaryCard}>
           <div className={styles.summaryHeader}>
@@ -113,7 +138,7 @@ export const CriterionGradeDisplay: React.FC<CriterionGradeDisplayProps> = ({ so
         </div>
       </div>
       
-      {}
+      {/* Список критериев */}
       <div className={styles.criteriaList}>
         <h4 className={styles.criteriaTitle}>Оценка по критериям</h4>
         
@@ -134,7 +159,7 @@ export const CriterionGradeDisplay: React.FC<CriterionGradeDisplayProps> = ({ so
             </div>
             
             <div className={styles.comparisonGrid}>
-              {}
+              {/* Самооценка студента */}
               <div className={styles.assessmentCard}>
                 <div className={styles.assessmentHeader}>
                   <span className={styles.assessmentIcon}>🤔</span>

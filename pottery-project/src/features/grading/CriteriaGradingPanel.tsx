@@ -1,3 +1,4 @@
+// features/grading/CriteriaGradingPanel.tsx - исправленная версия
 
 import React, { useState, useEffect } from 'react';
 import { solutionApi } from '../../shared/api/solutionApi';
@@ -47,30 +48,35 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
         const gradesMap = new Map<string, CriterionGradeRequestItem>();
         const commentsMap = new Map<string, string>();
         
-        data.items.forEach(item => {
-          if (item.teacherAssessment) {
-            const assessment = item.teacherAssessment;
-            gradesMap.set(item.criterion.id, {
-              criterionId: item.criterion.id,
-              valueType: assessment.valueType as 'POINTS' | 'PERCENT' | 'YES_NO',
-              pointsValue: assessment.pointsValue,
-              booleanValue: assessment.booleanValue,
-              percentValue: assessment.percentValue,
-              teacherComment: assessment.teacherComment,
-            });
-            
-            if (assessment.teacherComment) {
-              commentsMap.set(item.criterion.id, assessment.teacherComment);
+        // Проверяем, есть ли items и teacherAssessment
+        if (data && data.items) {
+          data.items.forEach(item => {
+            if (item.teacherAssessment) {
+              const assessment = item.teacherAssessment;
+              gradesMap.set(item.criterion.id, {
+                criterionId: item.criterion.id,
+                valueType: assessment.valueType as 'POINTS' | 'PERCENT' | 'YES_NO',
+                pointsValue: assessment.pointsValue,
+                booleanValue: assessment.booleanValue,
+                percentValue: assessment.percentValue,
+                teacherComment: assessment.teacherComment,
+              });
+              
+              if (assessment.teacherComment) {
+                commentsMap.set(item.criterion.id, assessment.teacherComment);
+              }
             }
-          }
-        });
+          });
+        }
         
         setGrades(gradesMap);
         setComments(commentsMap);
-        setProgressMissesCount(data.progressMissesCount || 0);
+        setProgressMissesCount(data?.progressMissesCount || 0);
         
       } catch (error) {
         console.error('Failed to fetch existing grades:', error);
+        // Не показываем ошибку пользователю, просто начинаем с пустого состояния
+        setExistingGradeData(null);
       } finally {
         setIsLoading(false);
       }
@@ -186,23 +192,25 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
       const gradesMap = new Map<string, CriterionGradeRequestItem>();
       const commentsMap = new Map<string, string>();
       
-      updatedData.items.forEach(item => {
-        if (item.teacherAssessment) {
-          const assessment = item.teacherAssessment;
-          gradesMap.set(item.criterion.id, {
-            criterionId: item.criterion.id,
-            valueType: assessment.valueType as 'POINTS' | 'PERCENT' | 'YES_NO',
-            pointsValue: assessment.pointsValue,
-            booleanValue: assessment.booleanValue,
-            percentValue: assessment.percentValue,
-            teacherComment: assessment.teacherComment,
-          });
-          
-          if (assessment.teacherComment) {
-            commentsMap.set(item.criterion.id, assessment.teacherComment);
+      if (updatedData && updatedData.items) {
+        updatedData.items.forEach(item => {
+          if (item.teacherAssessment) {
+            const assessment = item.teacherAssessment;
+            gradesMap.set(item.criterion.id, {
+              criterionId: item.criterion.id,
+              valueType: assessment.valueType as 'POINTS' | 'PERCENT' | 'YES_NO',
+              pointsValue: assessment.pointsValue,
+              booleanValue: assessment.booleanValue,
+              percentValue: assessment.percentValue,
+              teacherComment: assessment.teacherComment,
+            });
+            
+            if (assessment.teacherComment) {
+              commentsMap.set(item.criterion.id, assessment.teacherComment);
+            }
           }
-        }
-      });
+        });
+      }
       
       setGrades(gradesMap);
       setComments(commentsMap);
@@ -241,13 +249,13 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
 
   return (
     <div className={styles.container}>      
-      {/* Показываем итоговую оценку если есть */}
-      {existingGradeData && (
+      {/* Показываем итоговую оценку только если есть данные */}
+      {existingGradeData && existingGradeData.maxFinalScore !== undefined && (
         <div className={styles.summaryBar}>
           <div className={styles.summaryInfo}>
             <span className={styles.summaryLabel}>Итоговая оценка:</span>
             <span className={styles.summaryScore}>
-              {formatScore(existingGradeData.finalScore)} / {formatScore(existingGradeData.maxFinalScore)}
+              {formatScore(existingGradeData.finalScore || 0)} / {formatScore(existingGradeData.maxFinalScore)}
             </span>
           </div>
           {existingGradeData.gradedAt && (
@@ -257,8 +265,6 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
           )}
         </div>
       )}
-      
-
 
       <div className={styles.criteriaList}>
         {criteria.map((criterion) => {
@@ -267,7 +273,8 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
           const step = criterion.type === 'PERCENT' ? 1 : getStep(criterion.maxScore);
           const scorePercentage = (currentScore / criterion.maxScore) * 100;
           
-          const selfAssessment = existingGradeData?.items.find(
+          // Безопасный поиск selfAssessment
+          const selfAssessment = existingGradeData?.items?.find(
             item => item.criterion.id === criterion.id
           )?.selfAssessment;
           
@@ -281,7 +288,7 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
                   )}
                   {selfAssessment && (
                     <div className={styles.selfAssessmentHint}>
-                      Самооценка студента: {selfAssessment.calculatedScore} / {criterion.maxScore}
+                      🤔 Самооценка студента: {selfAssessment.calculatedScore} / {criterion.maxScore}
                       {selfAssessment.comment && ` (${selfAssessment.comment})`}
                     </div>
                   )}
@@ -323,7 +330,7 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
                   </div>
                 )}
 
-                {}
+                {/* Тип PERCENT - шкала от 0 до 100% */}
                 {criterion.type === 'PERCENT' && (
                   <div className={styles.sliderContainer}>
                     <div className={styles.sliderHeader}>
@@ -364,7 +371,7 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
                   </div>
                 )}
 
-                {}
+                {/* Тип POINTS, RANGE, SCALE - обычный ползунок */}
                 {(criterion.type === 'POINTS' || criterion.type === 'RANGE' || criterion.type === 'SCALE') && (
                   <div className={styles.sliderContainer}>
                     <div className={styles.sliderHeader}>
@@ -445,7 +452,7 @@ export const CriteriaGradingPanel: React.FC<CriteriaGradingPanelProps> = ({
           disabled={isSubmitting || externalIsSubmitting}
           className={styles.submitButton}
         >
-          {isSubmitting || externalIsSubmitting ? '💾 Сохранение...' : 'Оценить'}
+          {isSubmitting || externalIsSubmitting ? '💾 Сохранение...' : '✅ Оценить'}
         </button>
       </div>
     </div>

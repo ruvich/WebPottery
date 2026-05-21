@@ -183,6 +183,8 @@ export const SolutionPage: React.FC = () => {
   const getMemberGrade = (studentId: string): MemberGrade | undefined => {
     return solution?.memberGrades?.find(grade => grade.studentId === studentId);
   };
+  console.log('📊 MemberGrades:', solution?.memberGrades);
+
 
   const getStudentName = (studentId: string): string => {
     if (solution?.studentName && solution?.studentId === studentId) {
