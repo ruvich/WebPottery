@@ -1,41 +1,75 @@
 /* features/grading/GradingPanel.module.css */
 
-.gradingPanel {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  margin-top: 16px;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .title {
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1rem;
+  color: #333;
 }
 
-.formGroup {
-  margin-bottom: 24px;
+.scoreSection {
+  margin-bottom: 1rem;
 }
 
-.formGroup label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #495057;
-  margin-bottom: 12px;
+.scoreHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.scoreLabel {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.scoreValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.sliderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sliderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #999;
+  padding: 0 0.25rem;
+}
+
+.sliderMin {
+  color: #999;
+}
+
+.sliderCurrent {
+  font-weight: 600;
+  color: #4caf50;
+  font-size: 0.875rem;
+}
+
+.sliderMax {
+  color: #999;
 }
 
 .slider {
+  -webkit-appearance: none;
   width: 100%;
   height: 8px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: #e0e0e0;
   border-radius: 4px;
   outline: none;
   cursor: pointer;
@@ -43,14 +77,14 @@
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #667eea;
+  background: white;
+  border: 2px solid #4caf50;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s;
 }
 
 .slider::-webkit-slider-thumb:hover {
@@ -61,162 +95,117 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #667eea;
+  background: white;
+  border: 2px solid #4caf50;
   cursor: pointer;
-  border: none;
 }
 
-.slider:disabled {
-  opacity: 0.6;
+.scoreInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.scoreInput {
+  width: 80px;
+  padding: 0.375rem 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.scoreInput:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+
+.scoreInputSuffix {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.commentSection {
+  margin-top: 1rem;
+}
+
+.commentLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.commentInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+
+.commentInput:disabled {
+  background: #f5f5f5;
   cursor: not-allowed;
 }
 
-/* Стили для звездочек */
-.stars {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  justify-content: center;
-}
-
-.star {
-  font-size: 28px;
-  cursor: pointer;
-  color: #d1d5da;
-  transition: all 0.2s;
-  user-select: none;
-}
-
-.star:hover {
-  transform: scale(1.1);
-}
-
-.starActive {
-  color: #fbbf24;
-}
-
-.starActive:hover {
-  color: #f59e0b;
-}
-
-/* Информация об оценке */
-.scoreInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.scoreValue {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.scoreLabel {
-  font-size: 13px;
-  color: #6c757d;
-}
-
-/* Текстовое поле */
-.textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  transition: all 0.2s;
-}
-
-.textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Кнопки */
 .actions {
+  margin-top: 1.5rem;
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.submitButton,
-.cancelButton {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 
 .submitButton {
-  background: linear-gradient(135deg, #667eea 0%, #4592f6 100%);
+  background: linear-gradient(135deg, #63acff 0%, #63acff 100%);
   color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .cancelButton {
-  background: #e74c3c;
-  color: white;
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #c0392b;
-  transform: translateY(-1px);
+  background: #e0e0e0;
 }
 
-.submitButton:disabled,
 .cancelButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .gradingPanel {
-    padding: 16px;
-  }
-  
-  .star {
-    font-size: 24px;
-  }
-  
-  .actions {
-    flex-direction: column;
-  }
-  
-  .scoreInfo {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-}
-
-/* Анимация */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.gradingPanel {
-  animation: slideIn 0.3s ease-out;
 }

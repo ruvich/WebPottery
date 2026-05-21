@@ -1,110 +1,142 @@
-// features/grading/GradingPanel.tsx
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import styles from './GradingPanel.module.css';
 
 interface GradingPanelProps {
-  initialScore: number;
+  initialScore?: number;
   initialComment?: string;
-  onSubmit: (score: number, comment?: string) => Promise<void>;
+  onSubmit: (score: number, comment?: string) => void | Promise<void>;
   onCancel?: () => void;
   isSubmitting?: boolean;
   showComment?: boolean;
   title?: string;
+  minScore?: number;
+  maxScore: number;
+  step?: number;
 }
 
 export const GradingPanel: React.FC<GradingPanelProps> = ({
-  initialScore,
+  initialScore = 0,
   initialComment = '',
   onSubmit,
   onCancel,
   isSubmitting = false,
   showComment = true,
-  title
+  title = 'Оценка',
+  minScore = 0,
+  maxScore,
+  step = 0.5,
 }) => {
   const [score, setScore] = useState(initialScore);
   const [comment, setComment] = useState(initialComment);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (showComment) {
-      await onSubmit(score, comment);
-    } else {
-      await onSubmit(score);
-    }
+  useEffect(() => {
+    console.log('🎯 GradingPanel mounted with:', {
+      initialScore,
+      maxScore,
+      minScore,
+      step,
+      title
+    });
+  }, [initialScore, maxScore, minScore, step, title]);
+
+  const handleScoreChange = (value: number) => {
+    const rounded = Math.round(value * 10) / 10;
+    const validScore = Math.min(Math.max(rounded, minScore), maxScore);
+    setScore(validScore);
   };
 
-  const getScoreColor = (score: number) => {
-    if (score <= 2) return '#e74c3c';
-    if (score <= 3) return '#f39c12';
-    if (score <= 4) return '#3498db';
-    return '#27ae60';
+  const handleSubmit = () => {
+    onSubmit(score, showComment ? comment : undefined);
   };
 
-  const getScoreLabel = (score: number) => {
-    if (score === 1) return 'Очень плохо';
-    if (score === 2) return 'Плохо';
-    if (score === 3) return 'Удовлетворительно';
-    if (score === 4) return 'Хорошо';
-    if (score === 5) return 'Отлично';
-    return '';
-  };
+  const scorePercentage = ((score - minScore) / (maxScore - minScore)) * 100;
 
   return (
-    <div className={styles.gradingPanel}>
-      {title && <h3 className={styles.title}>{title}</h3>}
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
+    <div className={styles.container}>
+      <h3 className={styles.title}>{title}</h3>
+      
+      <div className={styles.scoreSection}>
+        <div className={styles.scoreHeader}>
+          <span className={styles.scoreLabel}>Оценка:</span>
+          <span className={styles.scoreValue}>
+            {score} / {maxScore}
+          </span>
+        </div>
+        
+        <div className={styles.sliderContainer}>
+          <div className={styles.sliderHeader}>
+            <span className={styles.sliderMin}>{minScore}</span>
+            <span className={styles.sliderCurrent}>{score}</span>
+            <span className={styles.sliderMax}>{maxScore}</span>
+          </div>
           
-          {}
           <input
             type="range"
-            min="1"
-            max="5"
-            step="1"
+            min={minScore}
+            max={maxScore}
+            step={step}
             value={score}
-            onChange={(e) => setScore(Number(e.target.value))}
+            onChange={(e) => handleScoreChange(parseFloat(e.target.value))}
             disabled={isSubmitting}
             className={styles.slider}
             style={{
-              background: `linear-gradient(to right, ${getScoreColor(1)} 0%, ${getScoreColor(score)} ${(score-1)*25}%, #e0e0e0 ${(score-1)*25}%)`
+              background: `linear-gradient(to right, #4caf50 0%, #4caf50 ${scorePercentage}%, #e0e0e0 ${scorePercentage}%, #e0e0e0 100%)`
             }}
           />
           
-          
-          
-          <div className={styles.scoreInfo}>
-            <span className={styles.scoreValue} style={{ color: getScoreColor(score) }}>
-              {score}/5
-            </span>
-            <span className={styles.scoreLabel}>{getScoreLabel(score)}</span>
-          </div>
-        </div>
-        
-        {showComment && (
-          <div className={styles.formGroup}>
-            <label>Комментарий (необязательно):</label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
+          <div className={styles.scoreInputWrapper}>
+            <input
+              type="number"
+              min={minScore}
+              max={maxScore}
+              step={step}
+              value={score}
+              onChange={(e) => handleScoreChange(parseFloat(e.target.value))}
               disabled={isSubmitting}
-              rows={3}
-              placeholder="Добавьте комментарий к оценке..."
-              className={styles.textarea}
+              className={styles.scoreInput}
             />
+            <span className={styles.scoreInputSuffix}>из {maxScore}</span>
           </div>
-        )}
-        
-        <div className={styles.actions}>
-          <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
-            {isSubmitting ? 'Сохранение...' : 'Сохранить оценку'}
-          </button>
-          {onCancel && (
-            <button type="button" onClick={onCancel} disabled={isSubmitting} className={styles.cancelButton}>
-              Отмена
-            </button>
-          )}
         </div>
-      </form>
+      </div>
+      
+      {showComment && (
+        <div className={styles.commentSection}>
+          <label className={styles.commentLabel}>
+            💬 Комментарий (необязательно):
+          </label>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            disabled={isSubmitting}
+            className={styles.commentInput}
+            placeholder="Введите комментарий к оценке..."
+            rows={3}
+          />
+        </div>
+      )}
+      
+      <div className={styles.actions}>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className={styles.cancelButton}
+          >
+            Отмена
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={styles.submitButton}
+        >
+          {isSubmitting ? 'Сохранение...' : 'Сохранить оценку'}
+        </button>
+      </div>
     </div>
   );
 };
