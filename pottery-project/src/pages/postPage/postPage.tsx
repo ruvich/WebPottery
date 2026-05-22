@@ -7,6 +7,7 @@ import { CreateSolution } from "../../features/createSolution/createSolution";
 import { VoteSolution } from "../../features/voteSolution/voteSolution";
 import { CriteriaListCard } from "../../entities/criteria/criteriaListCard";
 import { CommentsList } from "../../features/comment/commentList";
+import { CriterionGradeModal } from "../../entities/post/CriterionGradeModal"; // Импортируем модал
 import { useParams, Link, useNavigate} from "react-router-dom";
 
 export const PostPage = () => {
@@ -14,6 +15,8 @@ export const PostPage = () => {
     const [openFormCreate, setOpenFormCreate] = useState(false);
     const [openFormVote, setOpenFormVote] = useState(false);
     const [openFormCriteria, setOpenFormCriteria] = useState(false);
+    const [openCriterionGrade, setOpenCriterionGrade] = useState(false); // Стейт для модала с детализацией оценки
+    const [solutionId, setSolutionId] = useState<string | null>(null); // ID решения для запроса
     const navigate = useNavigate();
     const role = localStorage.getItem("userRole");
     const currentUserId = localStorage.getItem("userId");
@@ -126,6 +129,29 @@ export const PostPage = () => {
                 </Button>
               )}
 
+              {/* Кнопка для просмотра детализации оценки - показывается только для студентов, у которых есть решение */}
+              {role !== "TEACHER" && post?.type === "TASK" && post?.task?.gradingSettings?.enabled && solutionId && (
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => setOpenCriterionGrade(true)}
+                  sx={{
+                    py: 1.3,
+                    borderRadius: 3,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderColor: "#4caf50",
+                    color: "#4caf50",
+                    "&:hover": {
+                      borderColor: "#388e3c",
+                      backgroundColor: "rgba(76, 175, 80, 0.04)",
+                    },
+                  }}
+                >
+                  📊 Детализация оценки
+                </Button>
+              )}
+
               {role !== "TEACHER" && post?.type === "TASK" && (
                 <Button
                   variant="contained"
@@ -187,7 +213,10 @@ export const PostPage = () => {
                 <Typography variant="body1">Загрузка...</Typography>
               </Paper>
             ) : (
-              <PostCard post={post} />
+              <PostCard 
+                post={post} 
+                onSolutionIdChange={(id) => setSolutionId(id)} // Получаем ID решения из PostCard
+              />
             )}
 
             <CommentsList postId={postID!} currentUserId={currentUserId!} />
@@ -207,6 +236,13 @@ export const PostPage = () => {
           <VoteSolution
             open={openFormVote}
             onClose={() => setOpenFormVote(false)}
+          />
+
+          {/* Модальное окно с детализацией оценки по критериям */}
+          <CriterionGradeModal
+            open={openCriterionGrade}
+            onClose={() => setOpenCriterionGrade(false)}
+            solutionId={solutionId}
           />
         </Grid>
       </Grid>
