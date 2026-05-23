@@ -12,7 +12,7 @@ export type StudentsResponse = {
   total: number;
 };
 
-export const getStudents = async (page = 0, size = 20, q?: string): Promise<StudentsResponse> => {
+export const getStudents = async (page = 0, size = 1000, q?: string): Promise<StudentsResponse> => {
   const token = localStorage.getItem("accessToken");
   if (!token) throw new Error("Нет токена авторизации");
 

@@ -1,0 +1,50 @@
+.card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #1976d2;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.studentId {
+  font-weight: 500;
+  color: #333;
+}
+
+.status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status.submitted {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.status.draft {
+  background: #fff3e0;
+  color: #ed6c02;
+}
+
+.date {
+  color: #6c757d;
+  font-size: 0.875rem;
+}

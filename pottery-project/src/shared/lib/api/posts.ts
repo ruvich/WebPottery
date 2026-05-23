@@ -2,6 +2,19 @@ import axios from "axios";
 
 export type PostType = "MATERIAL" | "TASK";
 
+export type MaterialType = "LINK" | "TEXT";
+
+export type TaskType = "SOLO" | "TEAM";
+
+export type SolutionType = "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
+
+export interface 	TaskDetails {
+  description: string;
+  deadline: string;
+  mode: TaskType;
+  prioritySolution: SolutionType;
+}
+
 export interface Post {
   id: string;
   type: PostType;
@@ -9,6 +22,7 @@ export interface Post {
   description: string;
   createdAt: string;
   updatedAt: string;
+  task: TaskDetails;
 }
 
 export interface PostsResponse {
