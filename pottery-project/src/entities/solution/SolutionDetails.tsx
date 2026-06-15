@@ -84,8 +84,6 @@ export const SolutionDetails: React.FC<SolutionDetailsProps> = ({ solution }) =>
             <span className={styles.metaValue}>{getOwnerName()}</span>
           </div>
           <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>ID задания:</span>
-            <span className={styles.metaValue}>{solution.postId?.slice(0, 8)}...</span>
           </div>
           {solution.votesCount !== undefined && (
             <div className={styles.metaItem}>
