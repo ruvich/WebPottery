@@ -9,6 +9,7 @@ export type PrioritySolution = "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
 
 export type CriterionType = "POINTS" | "YES_NO" | "PERCENT";
 export type CriterionImpactType = "REGULAR" | "BONUS";
+export type ReviewType = "NORMAL" | "PEER_TO_PEER";
 
 export interface CriterionDto {
   title: string;
@@ -30,6 +31,12 @@ export interface TaskGradingSettings {
 
   progressPenaltyEnabled: boolean;
   progressPenaltyPerMiss: number;
+}
+
+export interface TaskReviewSettings {
+  reviewType: ReviewType;
+  reviewsPerStudent?: number | null;
+  reviewDeadline?: string | null;
 }
 
 export interface CreatePostRequest {
@@ -59,6 +66,8 @@ export interface CreatePostRequest {
       maxMembersPerTeam?: number;
     } | null;
 
+    reviewSettings?: TaskReviewSettings | null;
+
     prioritySolution?: PrioritySolution;
     gradingSettings?: TaskGradingSettings | null;
     criteria?: CriterionDto[];
@@ -87,6 +96,8 @@ export interface Task {
     minMembersPerTeam?: number;
     maxMembersPerTeam?: number;
   };
+
+  reviewSettings?: TaskReviewSettings | null;
 
   prioritySolution?: "CAPITAIN" | "LAST" | "FIRST" | "VOTING";
   gradingSettings?: TaskGradingSettings | null;

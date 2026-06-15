@@ -48,6 +48,10 @@ export const CreatePostPage = () => {
 
   const [criteria, setCriteria] = useState<CriterionDto[]>([]);
 
+  const [reviewType, setReviewType] = useState<"NORMAL" | "PEER_TO_PEER">("NORMAL");
+  const [reviewsPerStudent, setReviewsPerStudent] = useState(1);
+  const [reviewDeadline, setReviewDeadline] = useState("");
+
   const toNumber = (v: string) => (v.replace(/\D/g, "") === "" ? 0 : Number(v.replace(/\D/g, "")));
 
   const handleMinTeams = (v: number) => { setMinTeamsCount(v); if (v > maxTeamsCount) setMaxTeamsCount(v); };
@@ -61,8 +65,16 @@ export const CreatePostPage = () => {
       if (minTeamsCount > maxTeamsCount) return true;
       if (minMembersPerTeam > maxMembersPerTeam) return true;
     }
+    if (taskMode === "SOLO" && reviewType === "PEER_TO_PEER") {
+      const now = new Date();
+      const rd = reviewDeadline ? new Date(reviewDeadline) : null;
+
+      if (!reviewDeadline) return true;
+      if (!rd || rd <= now) return true;
+      if (reviewsPerStudent < 1) return true;
+    }
     return false;
-  }, [title, type, taskMode, minTeamsCount, maxTeamsCount, minMembersPerTeam, maxMembersPerTeam]);
+  }, [title, type, taskMode, minTeamsCount, maxTeamsCount, minMembersPerTeam, maxMembersPerTeam, reviewType, reviewDeadline, reviewsPerStudent]);
 
   const handleSubmit = async () => {
     setError("");
@@ -116,6 +128,19 @@ export const CreatePostPage = () => {
                   latePenaltyPerDay: latePenaltyEnabled ? latePenaltyPerDay : 0,
                   progressPenaltyEnabled,
                   progressPenaltyPerMiss: progressPenaltyEnabled ? progressPenaltyPerMiss : 0,
+                }
+              : null,
+
+            reviewSettings:
+            taskMode === "SOLO"
+              ? {
+                  reviewType,
+                  reviewsPerStudent:
+                    reviewType === "PEER_TO_PEER" ? reviewsPerStudent : null,
+                  reviewDeadline:
+                    reviewType === "PEER_TO_PEER" && reviewDeadline
+                      ? new Date(reviewDeadline).toISOString()
+                      : null,
                 }
               : null,
 
@@ -211,6 +236,56 @@ export const CreatePostPage = () => {
               <MenuItem value="SOLO">Индивидуальное</MenuItem>
               <MenuItem value="TEAM">Командное</MenuItem>
             </Select>
+
+            {taskMode === "SOLO" && (
+              <>
+                <Select
+                  fullWidth
+                  value={reviewType}
+                  onChange={(e) => setReviewType(e.target.value as any)}
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="NORMAL">Обычная проверка</MenuItem>
+                  <MenuItem value="PEER_TO_PEER">Peer-to-peer</MenuItem>
+                </Select>
+
+                {reviewType === "PEER_TO_PEER" && (
+                  <>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Количество проверок"
+                      value={reviewsPerStudent}
+                      onChange={(e) => setReviewsPerStudent(Number(e.target.value))}
+                      error={reviewsPerStudent < 1}
+                      helperText={reviewsPerStudent < 1 ? "Минимум 1 проверка" : ""}
+                      sx={{ mb: 2 }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      type="datetime-local"
+                      label="Дедлайн проверки"
+                      InputLabelProps={{ shrink: true }}
+                      value={reviewDeadline}
+                      onChange={(e) => setReviewDeadline(e.target.value)}
+                      sx={{ mb: 2 }}
+                      error={
+                        !reviewDeadline ||
+                        new Date(reviewDeadline) <= new Date()
+                      }
+                      helperText={
+                        !reviewDeadline
+                          ? "Дедлайн обязателен"
+                          : new Date(reviewDeadline) <= new Date()
+                            ? "Дедлайн должен быть в будущем"
+                            : ""
+                      }
+                    />
+                  </>
+                )}
+              </>
+            )}
 
             {taskMode === "TEAM" && (
               <>
