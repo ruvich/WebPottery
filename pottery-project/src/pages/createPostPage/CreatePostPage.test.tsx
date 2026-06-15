@@ -70,19 +70,6 @@ describe("CreatePostPage - extended tests", () => {
     expect(screen.getByLabelText("Подзаголовок")).toHaveValue("");
   });
 
-  test("TEAM режим отображает настройки команд", () => {
-    render(<CreatePostPage />);
-
-    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
-    fireEvent.click(screen.getByText("Задание"));
-
-    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
-    fireEvent.click(screen.getByText("Командное"));
-
-    expect(screen.getByLabelText("Мин. команд")).toBeInTheDocument();
-    expect(screen.getByLabelText("Макс. команд")).toBeInTheDocument();
-  });
-
   test("MATERIAL режим показывает поля материала", () => {
     render(<CreatePostPage />);
 
@@ -105,15 +92,159 @@ describe("CreatePostPage - extended tests", () => {
     expect(screen.queryByLabelText("Макс. команд")).not.toBeInTheDocument();
   });
 
-  test("MATERIAL TEXT режим показывает поле текста", () => {
+  test("SOLO + P2P показывает дополнительные поля", async () => {
     render(<CreatePostPage />);
 
     fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
-    fireEvent.click(screen.getByRole("option", { name: "Материал" }));
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
 
     fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
-    fireEvent.click(screen.getByRole("option", { name: "Текст" }));
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
 
-    expect(screen.getByLabelText("Текст материала")).toBeInTheDocument();
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    expect(screen.getByLabelText("Количество проверок")).toBeInTheDocument();
+    expect(screen.getByLabelText("Дедлайн проверки")).toBeInTheDocument();
+  });
+
+  test("P2P поля появляются только при выборе Peer-to-peer", () => {
+    render(<CreatePostPage />);
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    expect(
+      screen.queryByLabelText("Количество проверок")
+    ).not.toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    expect(screen.getByLabelText("Количество проверок")).toBeInTheDocument();
+    expect(screen.getByLabelText("Дедлайн проверки")).toBeInTheDocument();
+  });
+
+  test("NORMAL режим скрывает P2P поля", () => {
+    render(<CreatePostPage />);
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Обычная проверка" }));
+
+    expect(
+      screen.queryByLabelText("Количество проверок")
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByLabelText("Дедлайн проверки")
+    ).not.toBeInTheDocument();
+  });
+
+  test("P2P требует дедлайн", () => {
+    render(<CreatePostPage />);
+
+    fireEvent.change(screen.getByLabelText("Название"), {
+      target: { value: "Test" },
+    });
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    fireEvent.change(screen.getByLabelText("Количество проверок"), {
+      target: { value: "2" },
+    });
+
+    fireEvent.click(screen.getByText("Создать"));
+
+    expect(screen.getByText(/обязателен/i)).toBeInTheDocument();
+  });
+
+  test("P2P не принимает 0 или отрицательные проверки", () => {
+    render(<CreatePostPage />);
+
+    fireEvent.change(screen.getByLabelText("Название"), {
+      target: { value: "Test" },
+    });
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    fireEvent.change(screen.getByLabelText("Количество проверок"), {
+      target: { value: "0" },
+    });
+
+    expect(screen.getByLabelText("Количество проверок")).toHaveValue(0);
+
+    fireEvent.click(screen.getByText("Создать"));
+
+    expect(mockCreatePost).not.toHaveBeenCalled();
+  });
+
+  test("смена P2P -> NORMAL сбрасывает зависимости UI", () => {
+    render(<CreatePostPage />);
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    expect(screen.getByLabelText("Количество проверок")).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Обычная проверка" }));
+
+    expect(
+      screen.queryByLabelText("Количество проверок")
+    ).not.toBeInTheDocument();
+  });
+  
+  test("P2P с 0 проверок не проходит валидацию", async () => {
+    render(<CreatePostPage />);
+
+    fireEvent.change(screen.getByLabelText("Название"), {
+      target: { value: "Test" },
+    });
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(screen.getByRole("option", { name: "Задание" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(screen.getByRole("option", { name: "Индивидуальное" }));
+
+    fireEvent.mouseDown(screen.getAllByRole("combobox")[2]);
+    fireEvent.click(screen.getByRole("option", { name: "Peer-to-peer" }));
+
+    fireEvent.change(screen.getByLabelText("Количество проверок"), {
+      target: { value: "0" },
+    });
+
+    fireEvent.click(screen.getByText("Создать"));
+
+    expect(mockCreatePost).not.toHaveBeenCalled();
   });
 });

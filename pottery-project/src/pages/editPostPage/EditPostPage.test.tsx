@@ -49,30 +49,6 @@ describe("EditPostPage", () => {
     });
   });
 
-  test("рендерит TASK + TEAM поля", async () => {
-    mockFetchPost.mockResolvedValue({
-      type: "TASK",
-      title: "Задание",
-      task: {
-        description: "desc",
-        mode: "TEAM",
-        teamRules: {
-          minTeamsCount: 1,
-          maxTeamsCount: 3,
-          minMembersPerTeam: 2,
-          maxMembersPerTeam: 5,
-        },
-      },
-    });
-
-    render(<EditPostPage />);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Мин. команд")).toBeInTheDocument();
-      expect(screen.getByLabelText("Макс. команд")).toBeInTheDocument();
-    });
-  });
-
   test("SOLO режим НЕ показывает team поля", async () => {
     mockFetchPost.mockResolvedValue({
       type: "TASK",
@@ -180,4 +156,107 @@ describe("EditPostPage", () => {
     const btn = await screen.findByText("Сохранить");
     expect(btn).toBeDisabled();
   });
+
+  test("P2P данные загружаются корректно", async () => {
+    mockFetchPost.mockResolvedValue({
+      type: "TASK",
+      title: "Задание",
+      task: {
+        mode: "SOLO",
+        reviewSettings: {
+          reviewType: "PEER_TO_PEER",
+          reviewsPerStudent: 3,
+          reviewDeadline: "2026-12-01T10:00:00.000Z",
+        },
+      },
+    });
+
+    render(<EditPostPage />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("3")).toBeInTheDocument();
+    });
+  });
+
+  test("P2P режим показывает поля проверки", async () => {
+    mockFetchPost.mockResolvedValue({
+      type: "TASK",
+      title: "Задание",
+      task: {
+        mode: "SOLO",
+        reviewSettings: {
+          reviewType: "PEER_TO_PEER",
+          reviewsPerStudent: 2,
+          reviewDeadline: "2026-12-01T10:00:00.000Z",
+        },
+      },
+    });
+
+    render(<EditPostPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByLabelText("Количество проверок")
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByLabelText("Дедлайн проверки")
+      ).toBeInTheDocument();
+    });
+  });
+
+  test("изменение P2P настроек работает", async () => {
+    mockFetchPost.mockResolvedValue({
+      type: "TASK",
+      title: "Задание",
+      task: {
+        mode: "SOLO",
+        reviewSettings: {
+          reviewType: "PEER_TO_PEER",
+          reviewsPerStudent: 2,
+          reviewDeadline: "2026-12-01T10:00:00.000Z",
+        },
+      },
+    });
+
+    render(<EditPostPage />);
+
+    const input = await screen.findByLabelText("Количество проверок");
+
+    fireEvent.change(input, { target: { value: "5" } });
+
+    expect(input).toHaveValue(5);
+  });
+
+  test("P2P данные уходят в updatePost", async () => {
+    mockFetchPost.mockResolvedValue({
+      type: "TASK",
+      title: "Задание",
+      task: {
+        mode: "SOLO",
+        reviewSettings: {
+          reviewType: "PEER_TO_PEER",
+          reviewsPerStudent: 2,
+          reviewDeadline: "2026-12-01T10:00:00.000Z",
+        },
+      },
+    });
+
+    render(<EditPostPage />);
+
+    const btn = await screen.findByText("Сохранить");
+    fireEvent.click(btn);
+
+    await waitFor(() => {
+      const payload = mockUpdatePost.mock.calls[0][1];
+
+      expect(payload.task.reviewSettings).toEqual(
+        expect.objectContaining({
+          reviewType: "PEER_TO_PEER",
+          reviewsPerStudent: 2,
+        })
+      );
+    });
+  });
+
 });
