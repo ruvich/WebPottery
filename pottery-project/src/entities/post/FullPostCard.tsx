@@ -1,24 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  Box,
-  Stack,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  LinearProgress,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import {Card, CardContent, Typography, Chip, Box, Stack, Divider,} from "@mui/material";
 import type { PostsResponse } from "../../shared/lib/api/post";
 import type { CreateSolutionResponse } from "../../shared/lib/api/Solution/getMySolution";
 import { fetchSelectedSolution } from "../../shared/lib/api/Grade/getGrade";
 import { getMySolution } from "../../shared/lib/api/Solution/getMySolution";
 import { fetchGrade } from "../../shared/lib/api/Grade/getGrade";
-import { fetchCreterionGrade } from "../../shared/lib/api/Grade/getGrade";
+
 import { fetchCriterionGrade, type CriterionGradeResponse } from "../../shared/lib/api/Solution/getCriterionGrade";
 import { useParams } from "react-router-dom";
 
@@ -234,9 +221,24 @@ export const PostCard = ({ post, onSolutionIdChange }: Props) => {
                 </Box>{" "}
                 {post.task.mode === "TEAM" ? "Групповое" : "Индивидуальное"}
                 {post.task.gradingSettings.enabled === true ? ", Специальные критерии оценивания" : ", Стандартные критерии оценивания"}
+                {post.task.reviewSettings.reviewType === "PEER_TO_PEER" ? ", с оцениванием других команд." : "."}
               </Typography>
             )}
             
+            {post.type === "TASK" && post.task.reviewSettings.reviewType === "PEER_TO_PEER" && (
+              <Typography variant="body2" sx={{ color: "#000000" }}>
+                <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>
+                  Вам нужно оценить решение 
+                </Box>{" "}
+                {post.task.reviewSettings.reviewsPerStudent}
+                {" "}
+                <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>
+                  команд, до:
+                </Box>{" "}
+                {new Date(post.task.reviewSettings.reviewDeadline).toLocaleString()}
+              </Typography>
+            )}
+
             {post.type === "TASK" && post.task.mode === "TEAM" && (
               <Typography variant="body2" sx={{ color: "#000000" }}>
                 <Box component="span" sx={{ fontWeight: 700, color: "#000000" }}>

@@ -89,6 +89,22 @@ export const PostPage = () => {
                   ← К списку всех команд
                 </Button>
               )}
+              {post?.type === "TASK" && post?.task.reviewSettings.reviewType === "PEER_TO_PEER" && role !== "TEACHER" &&(
+                <Button
+                  component={Link}
+                  to={`/error-500`}
+                  variant="text"
+                  sx={{
+                    justifyContent: "flex-start",
+                    textTransform: "none",
+                    color: "#1976d2",
+                    fontWeight: 600,
+                    px: 0,
+                  }}
+                >
+                  Оценить решения других команд.
+                </Button>
+              )}
 
               {role === "TEACHER" && post?.type === "TASK" && (
                 <Button

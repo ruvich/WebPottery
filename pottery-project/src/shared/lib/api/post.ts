@@ -12,6 +12,8 @@ export type CriteriaType = "POINTS" | "YES_NO" | "PERCENT";
 
 export type ImpactCriteriaType = "REGULAR" | "BONUS ";
 
+export type ReviewType = "NORMAL" | "PEER_TO_PEER";
+
 export interface Material {
   type: MaterialType;
   title: string;
@@ -43,6 +45,12 @@ export interface 	TaskCriteria{
   displayOrder: string;
 }
 
+export interface TaskReviewSettings{
+  reviewType: ReviewType;
+  reviewsPerStudent: number;
+  reviewDeadline: string;
+}
+
 export interface 	TaskDetails {
   description: string;
   deadline: string;
@@ -50,6 +58,7 @@ export interface 	TaskDetails {
   prioritySolution: SolutionType;
   gradingSettings: TaskGradingSettings;
   criteria: TaskCriteria[];
+  reviewSettings: TaskReviewSettings;
 }
 
 export interface PostsResponse {
