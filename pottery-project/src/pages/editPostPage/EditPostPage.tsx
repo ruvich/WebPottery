@@ -53,6 +53,10 @@ export const EditPostPage = () => {
 
   const [criteria, setCriteria] = useState<CriterionDto[]>([]);
 
+  const [reviewType, setReviewType] = useState<"NORMAL" | "PEER_TO_PEER">("NORMAL");
+  const [reviewsPerStudent, setReviewsPerStudent] = useState(1);
+  const [reviewDeadline, setReviewDeadline] = useState("");
+
   const isTeam = taskMode === "TEAM";
 
   const toNumber = (v: string) => (v.replace(/\D/g, "") === "" ? 0 : Number(v.replace(/\D/g, "")));
@@ -125,6 +129,13 @@ export const EditPostPage = () => {
           }
 
           setCriteria(d.task.criteria ?? []);
+
+          const rs = d.task.reviewSettings;
+          if (rs) {
+            setReviewType(rs.reviewType ?? "NORMAL");
+            setReviewsPerStudent(rs.reviewsPerStudent ?? 1);
+            setReviewDeadline(rs.reviewDeadline?.slice(0, 16) ?? "");
+          }
         }
       } catch {
         navigate("/error-500");
@@ -144,6 +155,17 @@ export const EditPostPage = () => {
     if (gradingEnabled && latePenaltyEnabled && latePenaltyPerDay <= 0) return true;
     if (gradingEnabled && progressPenaltyEnabled && progressPenaltyPerMiss <= 0) return true;
 
+    if (taskMode === "SOLO" && reviewType === "PEER_TO_PEER") {
+      if (!reviewDeadline) return true;
+
+      const now = new Date();
+      const reviewDate = new Date(reviewDeadline);
+
+      if (reviewDate <= now) return true;
+
+      if (reviewsPerStudent < 1) return true;
+    }
+
     return false;
   }, [
     title, isTeam,
@@ -152,7 +174,8 @@ export const EditPostPage = () => {
     gradingEnabled,
     maxFinalScore,
     latePenaltyEnabled, latePenaltyPerDay,
-    progressPenaltyEnabled, progressPenaltyPerMiss
+    progressPenaltyEnabled, progressPenaltyPerMiss,
+    reviewType, reviewDeadline, reviewsPerStudent
   ]);
 
   const handleSubmit = async () => {
@@ -186,6 +209,18 @@ export const EditPostPage = () => {
               description: taskDescription || null,
               deadline: deadline ? new Date(deadline).toISOString() : null,
               mode: taskMode,
+
+              reviewSettings: taskMode === "SOLO"
+              ? {
+                  reviewType,
+                  reviewsPerStudent:
+                    reviewType === "PEER_TO_PEER" ? reviewsPerStudent : null,
+                  reviewDeadline:
+                    reviewType === "PEER_TO_PEER" && reviewDeadline
+                      ? new Date(reviewDeadline).toISOString()
+                      : null,
+                }
+              : null,
 
               ...(isTeam
                 ? {
@@ -328,6 +363,54 @@ export const EditPostPage = () => {
               <MenuItem value="SOLO">Индивидуальное</MenuItem>
               <MenuItem value="TEAM">Командное</MenuItem>
             </Select>
+
+            {taskMode === "SOLO" && (
+              <>
+                <Select
+                  fullWidth
+                  value={reviewType}
+                  onChange={e => setReviewType(e.target.value as any)}
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="NORMAL">Обычная проверка</MenuItem>
+                  <MenuItem value="PEER_TO_PEER">Peer-to-peer</MenuItem>
+                </Select>
+
+                {reviewType === "PEER_TO_PEER" && (
+                  <>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Количество проверок"
+                      value={reviewsPerStudent}
+                      onChange={e => setReviewsPerStudent(Number(e.target.value))}
+                      sx={{ mb: 2 }}
+                      error={reviewsPerStudent < 1}
+                      helperText={reviewsPerStudent < 1 ? "Минимум 1 проверка" : ""}
+                    />
+
+                    <TextField
+                      fullWidth
+                      type="datetime-local"
+                      label="Дедлайн проверки"
+                      InputLabelProps={{ shrink: true }}
+                      value={reviewDeadline}
+                      onChange={e => setReviewDeadline(e.target.value)}
+                      sx={{ mb: 2 }}
+                      error={
+                        !reviewDeadline ||
+                        new Date(reviewDeadline) <= new Date()
+                      }
+                      helperText={
+                        !reviewDeadline || new Date(reviewDeadline) <= new Date()
+                          ? "Дедлайн обязателен и должен быть в будущем"
+                          : ""
+                      }
+                    />
+                  </>
+                )}
+              </>
+            )}
 
             {isTeam && (
               <>
