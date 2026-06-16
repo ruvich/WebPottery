@@ -13,6 +13,7 @@ export const PeerReviewPage: React.FC = () => {
   const { solutionId } = useParams<{ solutionId: string }>();
   const navigate = useNavigate();
   
+  // Состояния
   const [peerReview, setPeerReview] = useState<PeerReview | null>(null);
   const [solution, setSolution] = useState<Solution | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ export const PeerReviewPage: React.FC = () => {
   const [authError, setAuthError] = useState(false);
   const [reviewDeadline, setReviewDeadline] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Проверка авторизации
   useEffect(() => {
@@ -35,41 +37,57 @@ export const PeerReviewPage: React.FC = () => {
 
   // Загрузка данных
   const fetchPeerReview = useCallback(async () => {
-    if (!solutionId) return;
-    
+    if (!solutionId) {
+      setError('ID решения не указан');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
+      // Пробуем получить ревью
       const review = await solutionApi.getPeerReviewBySolutionId(solutionId);
       setPeerReview(review);
       
+      // Пробуем получить решение
       try {
         const solutionData = await solutionApi.getSolutionById(solutionId);
         setSolution(solutionData);
-      } catch (solutionErr) {
+      } catch {
+        // Если решение не загрузилось, создаем минимальный объект
         if (review) {
           const minimalSolution: Solution = {
             id: solutionId,
             postId: review.postId,
-            text: 'Данные решения не загружены',
+            text: 'Данные решения временно недоступны',
             status: 'SUBMITTED',
             ownerType: 'STUDENT',
             studentId: '',
-            studentName: 'Неизвестный студент',
+            studentName: 'Студент',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             submittedAt: new Date().toISOString()
           };
           setSolution(minimalSolution);
-        } else {
-          throw solutionErr;
         }
       }
       
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Не удалось загрузить данные';
-      setError(message);
+      const errorMessage = err instanceof Error ? err.message : 'Не удалось загрузить данные';
+      
+      // Обработка разных ошибок
+      if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        setError('У вас нет прав для проверки этого решения');
+      } else if (errorMessage.includes('404')) {
+        setError('Ревью для этого решения не найдено');
+      } else {
+        setError(errorMessage);
+      }
+      
+      // Пробуем альтернативный метод
+      await fetchPeerReviewViaList();
     } finally {
       setLoading(false);
     }
@@ -90,35 +108,36 @@ export const PeerReviewPage: React.FC = () => {
           setPeerReview(myReview.review);
           setSolution(myReview.solution);
           setReviewDeadline(myReview.reviewDeadline);
-        } else {
-          setError('Ревью не назначено на вас');
+          setError(null);
         }
       }
-    } catch (err) {
-      console.error('Alternative method failed:', err);
+    } catch {
+      // Игнорируем ошибку, если альтернативный метод не сработал
     }
   }, [solutionId]);
 
+  // Загрузка при монтировании и обновлении
   useEffect(() => {
     fetchPeerReview();
   }, [fetchPeerReview, refreshKey]);
 
-  useEffect(() => {
-    if (!loading && error && error.includes('прав')) {
-      fetchPeerReviewViaList();
-    }
-  }, [loading, error, fetchPeerReviewViaList]);
-
   // Автоматическое скрытие сообщения об успехе
   useEffect(() => {
     if (showSuccessMessage) {
-      const timer = setTimeout(() => setShowSuccessMessage(false), 3000);
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showSuccessMessage]);
 
-  const handleSubmitReview = async (score: number, comment?: string) => {
-    if (!solutionId) return;
+  // Отправка ревью
+  const handleSubmitReview = useCallback(async (score: number, comment?: string) => {
+    if (!solutionId) {
+      setError('ID решения не указан');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -133,6 +152,7 @@ export const PeerReviewPage: React.FC = () => {
       
       setPeerReview(updatedReview);
       setIsEditing(false);
+      setSuccessMessage(updatedReview.score ? 'Оценка успешно обновлена!' : 'Оценка успешно сохранена!');
       setShowSuccessMessage(true);
       
     } catch (err) {
@@ -141,36 +161,50 @@ export const PeerReviewPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [solutionId]);
 
-  const handleDeleteReview = async () => {
-    if (!solutionId || !peerReview?.score) return;
+  // Удаление ревью
+  const handleDeleteReview = useCallback(async () => {
+    if (!solutionId) {
+      setError('ID решения не указан');
+      return;
+    }
     
-    const confirmDelete = window.confirm('Вы уверены, что хотите удалить свою оценку? Это действие нельзя отменить.');
+    const confirmDelete = window.confirm(
+      'Вы уверены, что хотите удалить свою оценку? Это действие нельзя отменить.'
+    );
+    
     if (!confirmDelete) return;
     
     try {
       setIsSubmitting(true);
+      
+      // Отправляем оценку 0 для удаления
       const deleteData: SubmitPeerReviewRequest = {
         score: 0,
         comment: ''
       };
+      
       const updatedReview = await solutionApi.submitPeerReview(solutionId, deleteData);
       setPeerReview(updatedReview);
+      setSuccessMessage('Оценка успешно удалена');
       setShowSuccessMessage(true);
+      
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось удалить оценку';
       setError(message);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [solutionId]);
 
-  const handleRefresh = () => {
+  // Обновление страницы
+  const handleRefresh = useCallback(() => {
     setRefreshKey(prev => prev + 1);
-  };
+  }, []);
 
-  const formatDate = (date?: string | null) => {
+  // Форматирование даты
+  const formatDate = useCallback((date?: string | null) => {
     if (!date) return 'Дата не указана';
     try {
       return new Date(date).toLocaleDateString('ru-RU', {
@@ -183,31 +217,34 @@ export const PeerReviewPage: React.FC = () => {
     } catch {
       return 'Некорректная дата';
     }
-  };
+  }, []);
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'ASSIGNED': return 'Ожидает проверки';
-      case 'SUBMITTED': return 'Проверено';
-      case 'EXPIRED': return 'Просрочено';
-      default: return status;
-    }
-  };
+  // Получение статуса
+  const getStatusLabel = useCallback((status: string) => {
+    const statusMap: Record<string, string> = {
+      'ASSIGNED': 'Ожидает проверки',
+      'SUBMITTED': 'Проверено',
+      'EXPIRED': 'Просрочено'
+    };
+    return statusMap[status] || status;
+  }, []);
 
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'ASSIGNED': return styles.statusPending;
-      case 'SUBMITTED': return styles.statusSubmitted;
-      case 'EXPIRED': return styles.statusExpired;
-      default: return styles.statusPending;
-    }
-  };
+  const getStatusClass = useCallback((status: string) => {
+    const classMap: Record<string, string> = {
+      'ASSIGNED': styles.statusPending,
+      'SUBMITTED': styles.statusSubmitted,
+      'EXPIRED': styles.statusExpired
+    };
+    return classMap[status] || styles.statusPending;
+  }, []);
 
+  // Вычисляемые значения
   const isReviewSubmitted = peerReview?.status === 'SUBMITTED';
   const isReviewExpired = peerReview?.status === 'EXPIRED';
   const canEdit = !isReviewExpired;
-  const hasExistingGrade = peerReview?.score !== null && peerReview?.score !== undefined && peerReview?.score > 0;
+  const hasExistingGrade = Boolean(peerReview?.score && peerReview.score > 0);
 
+  // Рендер ошибки авторизации
   if (authError) {
     return (
       <div className={styles.page}>
@@ -223,19 +260,20 @@ export const PeerReviewPage: React.FC = () => {
     );
   }
 
+  // Рендер загрузки
   if (loading) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>
-          <div>Загрузка данных для проверки...</div>
-          <div style={{ fontSize: '12px', marginTop: '10px', color: '#666' }}>
-            Solution ID: {solutionId}
-          </div>
+          <div className={styles.spinner}></div>
+          <p>Загрузка данных для проверки...</p>
+          <span className={styles.loadingId}>ID: {solutionId}</span>
         </div>
       </div>
     );
   }
 
+  // Рендер ошибки
   if (error || !peerReview) {
     return (
       <div className={styles.page}>
@@ -249,17 +287,17 @@ export const PeerReviewPage: React.FC = () => {
               <ul>
                 <li>Ревью не назначено на вас</li>
                 <li>Истек срок проверки</li>
-                <li>Решение уже было проверено ранее</li>
+                <li>Решение уже было проверено</li>
                 <li>Неправильный ID решения</li>
               </ul>
             </div>
           )}
           
-          <div style={{ marginTop: '20px' }}>
+          <div className={styles.errorActions}>
             <button onClick={handleRefresh} className={styles.button}>
               Попробовать снова
             </button>
-            <button onClick={() => navigate(-1)} className={styles.button}>
+            <button onClick={() => navigate(-1)} className={styles.buttonSecondary}>
               Вернуться назад
             </button>
           </div>
@@ -268,27 +306,37 @@ export const PeerReviewPage: React.FC = () => {
     );
   }
 
+  // Основной рендер
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <button onClick={() => navigate(-1)} className={styles.backButton}>
+      {/* Хедер */}
+      <header className={styles.header}>
+        <button 
+          onClick={() => navigate(-1)} 
+          className={styles.backButton}
+          aria-label="Назад"
+        >
           ← Назад
         </button>
-        <button onClick={handleRefresh} className={styles.refreshButton}>
+        <button 
+          onClick={handleRefresh} 
+          className={styles.refreshButton}
+          aria-label="Обновить"
+        >
           🔄 Обновить
         </button>
-      </div>
+      </header>
 
       <div className={styles.container}>
         {/* Сообщение об успехе */}
         {showSuccessMessage && (
           <div className={styles.successMessage}>
-            ✅ {hasExistingGrade ? 'Оценка успешно обновлена!' : 'Оценка успешно сохранена!'}
+            ✅ {successMessage}
           </div>
         )}
 
         {/* Информация о ревью */}
-        <div className={styles.reviewInfo}>
+        <section className={styles.reviewInfo}>
           <div className={styles.reviewHeader}>
             <h1 className={styles.title}>Проверка решения</h1>
             <span className={`${styles.status} ${getStatusClass(peerReview.status)}`}>
@@ -298,23 +346,21 @@ export const PeerReviewPage: React.FC = () => {
           
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>📅 Назначено:</span>
+              <span className={styles.infoLabel}>Назначено:</span>
               <span className={styles.infoValue}>{formatDate(peerReview.createdAt)}</span>
             </div>
             {peerReview.submittedAt && (
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>✅ Проверено:</span>
+                <span className={styles.infoLabel}>Проверено:</span>
                 <span className={styles.infoValue}>{formatDate(peerReview.submittedAt)}</span>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Детали решения */}
         {solution && (
-          <div className={styles.solutionSection}>
+          <section className={styles.solutionSection}>
             <h2 className={styles.sectionTitle}>📄 Решение студента</h2>
             
             <div className={styles.solutionMeta}>
@@ -358,10 +404,15 @@ export const PeerReviewPage: React.FC = () => {
                 <div className={styles.attachments}>
                   {solution.videoUrl && (
                     <div className={styles.attachmentCard}>
-                      <div className={styles.attachmentIcon}>🎥</div>
+                      <span className={styles.attachmentIcon}>🎥</span>
                       <div className={styles.attachmentInfo}>
-                        <div className={styles.attachmentName}>Видео</div>
-                        <a href={solution.videoUrl} target="_blank" rel="noopener noreferrer">
+                        <span className={styles.attachmentName}>Видео</span>
+                        <a 
+                          href={solution.videoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className={styles.attachmentLink}
+                        >
                           Смотреть видео
                         </a>
                       </div>
@@ -369,10 +420,15 @@ export const PeerReviewPage: React.FC = () => {
                   )}
                   {solution.attachmentUrl && (
                     <div className={styles.attachmentCard}>
-                      <div className={styles.attachmentIcon}>📎</div>
+                      <span className={styles.attachmentIcon}>📎</span>
                       <div className={styles.attachmentInfo}>
-                        <div className={styles.attachmentName}>Вложение</div>
-                        <a href={solution.attachmentUrl} target="_blank" rel="noopener noreferrer">
+                        <span className={styles.attachmentName}>Вложение</span>
+                        <a 
+                          href={solution.attachmentUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className={styles.attachmentLink}
+                        >
                           Скачать файл
                         </a>
                       </div>
@@ -381,30 +437,27 @@ export const PeerReviewPage: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {/* Панель оценивания */}
-        <div className={styles.gradingSection}>
+        <section className={styles.gradingSection}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
-              {hasExistingGrade && !isEditing ? '⭐ Ваша оценка' : '📝 Оценка решения'}
+              {hasExistingGrade && !isEditing ? ' Ваша оценка' : 'Оценка решения'}
             </h2>
-            <div className={styles.buttonGroup}>
-              {canEdit && !isEditing && (
-                <>
-                  <button 
-                    onClick={() => setIsEditing(true)}
-                    className={styles.editButton}
-                    disabled={isSubmitting}
-                  >
-                    {hasExistingGrade ? '✏️ Редактировать оценку' : '➕ Оценить решение'}
-                  </button>
-                  
-                 
-                </>
-              )}
-            </div>
+            
+            {canEdit && !isEditing && (
+              <div className={styles.buttonGroup}>
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className={styles.editButton}
+                  disabled={isSubmitting}
+                >
+                  {hasExistingGrade ? 'Редактировать' : 'Оценить'}
+                </button>
+              </div>
+            )}
           </div>
 
           {isReviewExpired && (
@@ -433,14 +486,16 @@ export const PeerReviewPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              
               {peerReview.comment && (
                 <div className={styles.commentDisplay}>
                   <strong>💬 Комментарий:</strong>
                   <p>{peerReview.comment}</p>
                 </div>
               )}
+              
               <div className={styles.editHint}>
-                💡 Нажмите "Редактировать оценку", чтобы изменить
+                💡 Нажмите "Редактировать", чтобы изменить оценку
               </div>
             </div>
           )}
@@ -461,7 +516,7 @@ export const PeerReviewPage: React.FC = () => {
               step={1}
             />
           )}
-        </div>
+        </section>
 
         {/* Информация о дедлайне */}
         {reviewDeadline && (

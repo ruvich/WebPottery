@@ -13,6 +13,7 @@ import { CreatePostPage } from "../pages/createPostPage/CreatePostPage";
 import { EditPostPage } from "../pages/editPostPage/EditPostPage";
 import { TeamsPage } from "../pages/teamsPage/TeamsPage";
 import { PeerReviewPage } from '../pages/PeerReviewPage/PeerReviewPage.tsx';
+import { MyPeerReviewsPage } from '../pages/PreviewsPage/MyPeerReviewsPage.tsx';
 
 export const AppRoutes = () => {
   return (
@@ -25,6 +26,7 @@ export const AppRoutes = () => {
         <Route path="/solutions/:solutionId" element={<SolutionPage />} />
         <Route path="/peer-review/:solutionId" element={<PeerReviewPage />} />
         <Route path="/posts/:postId/solutions" element={<SolutionsPage />} />
+        <Route path="/posts/:postId/peer-reviews/mine" element={<MyPeerReviewsPage />} />
         <Route path="/posts/:postId" element={<PostPage />} />
         <Route path="/course" element={<PostsPage />} />
         <Route path="/students" element={<StudentsListPage />} />
