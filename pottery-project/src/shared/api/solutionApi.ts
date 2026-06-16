@@ -1,4 +1,3 @@
-
 import type { 
   Solution, 
   GradeTeamRequest, 
@@ -7,7 +6,10 @@ import type {
   CriterionGradeRequest,
   CriterionGradeRequestItem,
   CriterionGradeResponse,
-  IndividualGradeResponse
+  IndividualGradeResponse,
+  PeerReview,
+  PeerReviewWithSolution,
+  SubmitPeerReviewRequest
 } from './types/solutionApi';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -79,7 +81,8 @@ async function fetchWithLog<T>(
 }
 
 export const solutionApi = {
-  // Получить решение по ID
+  // ============ Существующие методы ============
+  
   getSolutionById: async (
     solutionId: string,
     customToken?: string
@@ -237,6 +240,85 @@ export const solutionApi = {
       {
         method: 'GET',
         headers: createHeaders(token),
+      },
+      token
+    );
+  },
+
+  // ============ Новые P2P методы ============
+  
+  /**
+   * Получить все назначенные P2P ревью для текущего пользователя по postId
+   */
+  getMyPeerReviews: async (
+    postId: string,
+    customToken?: string
+  ): Promise<PeerReviewWithSolution[]> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`📋 Fetching my peer reviews for post ${postId}`);
+    
+    return fetchWithLog<PeerReviewWithSolution[]>(
+      `/posts/${postId}/peer-reviews/mine`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
+      },
+      token
+    );
+  },
+
+  /**
+   * Получить P2P ревью по ID решения
+   */
+  getPeerReviewBySolutionId: async (
+    solutionId: string,
+    customToken?: string
+  ): Promise<PeerReview> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`🔍 Fetching peer review for solution ${solutionId}`);
+    
+    return fetchWithLog<PeerReview>(
+      `/solutions/${solutionId}/peer-review`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
+      },
+      token
+    );
+  },
+
+  /**
+   * Отправить/обновить P2P ревью
+   */
+  submitPeerReview: async (
+    solutionId: string,
+    data: SubmitPeerReviewRequest,
+    customToken?: string
+  ): Promise<PeerReview> => {
+    const token = customToken || getToken();
+    
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`📝 Submitting peer review for solution ${solutionId} with score ${data.score}`);
+    
+    return fetchWithLog<PeerReview>(
+      `/solutions/${solutionId}/peer-review`,
+      {
+        method: 'PUT',
+        headers: createHeaders(token),
+        body: JSON.stringify(data),
       },
       token
     );

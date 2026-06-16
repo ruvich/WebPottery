@@ -12,6 +12,7 @@ import { PostPage } from "../pages/postPage/postPage.tsx";
 import { CreatePostPage } from "../pages/createPostPage/CreatePostPage";
 import { EditPostPage } from "../pages/editPostPage/EditPostPage";
 import { TeamsPage } from "../pages/teamsPage/TeamsPage";
+import { PeerReviewPage } from '../pages/PeerReviewPage/PeerReviewPage.tsx';
 
 export const AppRoutes = () => {
   return (
@@ -22,6 +23,7 @@ export const AppRoutes = () => {
       <Route element={<MainLayout />}>
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/solutions/:solutionId" element={<SolutionPage />} />
+        <Route path="/peer-review/:solutionId" element={<PeerReviewPage />} />
         <Route path="/posts/:postId/solutions" element={<SolutionsPage />} />
         <Route path="/posts/:postId" element={<PostPage />} />
         <Route path="/course" element={<PostsPage />} />

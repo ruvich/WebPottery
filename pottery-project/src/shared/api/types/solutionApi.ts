@@ -8,6 +8,31 @@ export interface CriterionGradeRequestItem {
   teacherComment?: string | null;
 }
 
+export interface PeerReview {
+  id: string;
+  solutionId: string;
+  postId: string;
+  reviewerId: string;
+  reviewerName: string;
+  status: 'ASSIGNED' | 'SUBMITTED' | 'EXPIRED';
+  score: number | null;
+  comment: string | null;
+  createdAt: string;
+  submittedAt: string | null;
+}
+
+export interface PeerReviewWithSolution {
+  review: PeerReview;
+  solution: Solution;
+  reviewDeadline: string;
+}
+
+export interface SubmitPeerReviewRequest {
+  score: number;
+  comment?: string;
+}
+
+
 export interface CriterionGradeRequest {
   items: CriterionGradeRequestItem[];
   progressMissesCount?: number;

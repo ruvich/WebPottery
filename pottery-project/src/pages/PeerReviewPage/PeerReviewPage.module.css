@@ -1,0 +1,502 @@
+/* Добавь в конец файла */
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.deleteButton {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.editButton:disabled,
+.deleteButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  margin: 16px 24px;
+  padding: 12px 16px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  color: #155724;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gradeWithStars {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.starsDisplay {
+  display: flex;
+  gap: 4px;
+  font-size: 24px;
+}
+
+.starFilled {
+  color: #ffc107;
+}
+
+.starEmpty {
+  color: #dee2e6;
+}
+
+.gradeMax {
+  font-size: 18px;
+  color: #6c757d;
+}
+
+.editHint {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #e7f3ff;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #0066cc;
+  text-align: center;
+}
+
+.expiredText {
+  color: #dc3545;
+  margin-left: 8px;
+}
+
+.hint {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.hint h3 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.hint ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.hint li {
+  margin: 8px 0;
+  color: #666;
+}
+
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.backButton, .refreshButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.backButton {
+  background: none;
+  color: #0066cc;
+}
+
+.backButton:hover {
+  background-color: #f0f0f0;
+}
+
+.refreshButton {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.refreshButton:hover {
+  background-color: #e0e0e0;
+}
+
+.container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.reviewInfo {
+  padding: 24px;
+  background: linear-gradient(135deg, #979aab 0%, #a197aa 100%);
+  color: white;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusPending {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.statusSubmitted {
+  background-color: #28a745;
+  color: white;
+}
+
+.statusExpired {
+  background-color: #dc3545;
+  color: white;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.infoValue {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.solutionSection {
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.solutionMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metaLabel {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.metaValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.subsectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #555;
+}
+
+.solutionContent {
+  margin-bottom: 24px;
+}
+
+.textContent {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.paragraph {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.attachmentsSection {
+  margin-top: 24px;
+}
+
+.attachments {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.attachmentCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.attachmentIcon {
+  font-size: 24px;
+}
+
+.attachmentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attachmentName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.attachmentInfo a {
+  font-size: 12px;
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.attachmentInfo a:hover {
+  text-decoration: underline;
+}
+
+.gradingSection {
+  padding: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.editButton {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.editButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.editButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.submittedGrade {
+  padding: 20px;
+  background-color: #d4edda;
+  border-radius: 8px;
+  border: 1px solid #c3e6cb;
+}
+
+.gradeDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gradeLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: #155724;
+}
+
+.gradeValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #155724;
+}
+
+.commentDisplay {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #c3e6cb;
+}
+
+.commentDisplay p {
+  margin: 8px 0 0 0;
+  color: #155724;
+}
+
+.expiredWarning {
+  padding: 12px 16px;
+  background-color: #f8d7da;
+  border-radius: 6px;
+  color: #721c24;
+  margin-bottom: 20px;
+}
+
+.deadlineInfo {
+  padding: 16px 24px;
+  background-color: #fff3cd;
+  border-top: 1px solid #ffeeba;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deadlineIcon {
+  font-size: 20px;
+}
+
+.deadlineText {
+  color: #856404;
+  font-weight: 500;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #6c757d;
+}
+
+.error {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.error h2 {
+  margin: 0 0 12px 0;
+  color: #dc3545;
+}
+
+.error p {
+  margin: 0 0 20px 0;
+  color: #6c757d;
+}
+
+.button {
+  padding: 10px 20px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0 8px;
+}
+
+.button:hover {
+  background-color: #0052a3;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 12px;
+  }
+  
+  .reviewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .infoGrid,
+  .solutionMeta {
+    grid-template-columns: 1fr;
+  }
+  
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
