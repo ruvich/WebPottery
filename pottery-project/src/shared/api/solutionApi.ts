@@ -296,6 +296,28 @@ export const solutionApi = {
     );
   },
 
+  getSolutionPeerReviews: async (
+    solutionId: string,
+    customToken?: string
+  ): Promise<PeerReview[]> => {
+    const token = customToken || getToken();
+
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    console.log(`📋 Fetching all peer reviews for solution ${solutionId}`);
+
+    return fetchWithLog<PeerReview[]>(
+      `/solutions/${solutionId}/peer-reviews`,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
+      },
+      token
+    );
+  },
+
   /**
    * Отправить/обновить P2P ревью
    */

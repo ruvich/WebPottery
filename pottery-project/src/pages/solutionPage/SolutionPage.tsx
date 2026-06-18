@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { solutionApi } from '../../shared/api/solutionApi';
 import { taskApi } from '../../shared/api/taskApi';
+import { fetchPost } from '../../shared/lib/api/post';
 import type { Solution, MemberGrade, CriterionGradeRequestItem, IndividualGradeResponse } from '../../shared/api/types/solutionApi';
 import type { Criterion } from '../../shared/api/taskApi';
 import { SolutionDetails } from '../../entities/solution/SolutionDetails';
@@ -13,8 +14,10 @@ import styles from './SolutionPage.module.css';
 export const SolutionPage: React.FC = () => {
   const { solutionId } = useParams<{ solutionId: string }>();
   const navigate = useNavigate();
-  
+  const role = localStorage.getItem('userRole');
+
   const [solution, setSolution] = useState<Solution | null>(null);
+  const [isPeerToPeer, setIsPeerToPeer] = useState(false);
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +65,14 @@ export const SolutionPage: React.FC = () => {
         } catch (err) {
           console.warn('Failed to load criteria:', err);
           setCriteria([]);
+        }
+
+        try {
+          const post = await fetchPost(data.postId);
+          setIsPeerToPeer(post?.task?.reviewSettings?.reviewType === 'PEER_TO_PEER');
+        } catch (err) {
+          console.warn('Failed to load post review settings:', err);
+          setIsPeerToPeer(false);
         }
       }
     } catch (err) {
@@ -294,6 +305,11 @@ export const SolutionPage: React.FC = () => {
         <Link to={`/posts/${solution.postId}/solutions`} className={styles.backButton}>
           ← Назад к списку решений
         </Link>
+        {role === 'TEACHER' && isPeerToPeer && (
+          <Link to={`/solutions/${solution.id}/peer-reviews`} className={styles.refreshButton}>
+            👥 Оценки от учеников
+          </Link>
+        )}
         <button onClick={handleRefresh} className={styles.refreshButton}>
           🔄 Обновить
         </button>
