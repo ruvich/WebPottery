@@ -81,7 +81,6 @@ async function fetchWithLog<T>(
 }
 
 export const solutionApi = {
-  // ============ Существующие методы ============
   
   getSolutionById: async (
     solutionId: string,

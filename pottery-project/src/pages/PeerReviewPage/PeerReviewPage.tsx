@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { solutionApi } from '../../shared/api/solutionApi';
 import type { 
   PeerReview, 
@@ -12,17 +12,25 @@ import styles from './PeerReviewPage.module.css';
 export const PeerReviewPage: React.FC = () => {
   const { solutionId } = useParams<{ solutionId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Состояния
-  const [peerReview, setPeerReview] = useState<PeerReview | null>(null);
-  const [solution, setSolution] = useState<Solution | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Получаем данные из state (при переходе со списка ревью)
+  const state = location.state as {
+    peerReview?: PeerReview;
+    solution?: Solution;
+    reviewDeadline?: string;
+  } | null;
+  
+  // Состояния - инициализируем из state, если есть
+  const [peerReview, setPeerReview] = useState<PeerReview | null>(state?.peerReview || null);
+  const [solution, setSolution] = useState<Solution | null>(state?.solution || null);
+  const [loading, setLoading] = useState(!state?.peerReview || !state?.solution);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [authError, setAuthError] = useState(false);
-  const [reviewDeadline, setReviewDeadline] = useState<string | null>(null);
+  const [reviewDeadline, setReviewDeadline] = useState<string | null>(state?.reviewDeadline || null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -35,8 +43,15 @@ export const PeerReviewPage: React.FC = () => {
     }
   }, [navigate]);
 
-  // Загрузка данных
+  // Загрузка данных (только если нет данных в state)
   const fetchPeerReview = useCallback(async () => {
+    // Если данные уже есть в state, не загружаем
+    if (state?.peerReview && state?.solution) {
+      console.log('✅ Using data from navigation state');
+      setLoading(false);
+      return;
+    }
+
     if (!solutionId) {
       setError('ID решения не указан');
       setLoading(false);
@@ -47,21 +62,22 @@ export const PeerReviewPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Пробуем получить ревью
+      console.log('🔍 Fetching peer review for solution:', solutionId);
       const review = await solutionApi.getPeerReviewBySolutionId(solutionId);
       setPeerReview(review);
       
-      // Пробуем получить решение
+      // Пытаемся получить решение через API
       try {
         const solutionData = await solutionApi.getSolutionById(solutionId);
         setSolution(solutionData);
-      } catch {
-        // Если решение не загрузилось, создаем минимальный объект
+      } catch (apiError) {
+        console.warn('Could not fetch solution from API');
+        // Если не получилось, но у нас есть ревью - создаем минимальный объект
         if (review) {
-          const minimalSolution: Solution = {
+          setSolution({
             id: solutionId,
             postId: review.postId,
-            text: 'Данные решения временно недоступны',
+            text: 'Текст решения недоступен',
             status: 'SUBMITTED',
             ownerType: 'STUDENT',
             studentId: '',
@@ -69,15 +85,13 @@ export const PeerReviewPage: React.FC = () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             submittedAt: new Date().toISOString()
-          };
-          setSolution(minimalSolution);
+          });
         }
       }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Не удалось загрузить данные';
       
-      // Обработка разных ошибок
       if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
         setError('У вас нет прав для проверки этого решения');
       } else if (errorMessage.includes('404')) {
@@ -85,17 +99,14 @@ export const PeerReviewPage: React.FC = () => {
       } else {
         setError(errorMessage);
       }
-      
-      // Пробуем альтернативный метод
-      await fetchPeerReviewViaList();
     } finally {
       setLoading(false);
     }
-  }, [solutionId]);
+  }, [solutionId, state]);
 
   // Альтернативный метод загрузки через список ревью
   const fetchPeerReviewViaList = useCallback(async () => {
-    if (!solutionId) return;
+    if (!solutionId || state?.peerReview) return;
     
     try {
       const solutionData = await solutionApi.getSolutionById(solutionId);
@@ -114,12 +125,19 @@ export const PeerReviewPage: React.FC = () => {
     } catch {
       // Игнорируем ошибку, если альтернативный метод не сработал
     }
-  }, [solutionId]);
+  }, [solutionId, state]);
 
   // Загрузка при монтировании и обновлении
   useEffect(() => {
     fetchPeerReview();
   }, [fetchPeerReview, refreshKey]);
+
+  // Если первый метод не сработал, пробуем альтернативный
+  useEffect(() => {
+    if (!loading && error && !state?.peerReview) {
+      fetchPeerReviewViaList();
+    }
+  }, [loading, error, fetchPeerReviewViaList, state]);
 
   // Автоматическое скрытие сообщения об успехе
   useEffect(() => {
@@ -179,7 +197,6 @@ export const PeerReviewPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       
-      // Отправляем оценку 0 для удаления
       const deleteData: SubmitPeerReviewRequest = {
         score: 0,
         comment: ''
@@ -444,7 +461,7 @@ export const PeerReviewPage: React.FC = () => {
         <section className={styles.gradingSection}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
-              {hasExistingGrade && !isEditing ? ' Ваша оценка' : 'Оценка решения'}
+              {hasExistingGrade && !isEditing ? '⭐ Ваша оценка' : '📝 Оценка решения'}
             </h2>
             
             {canEdit && !isEditing && (
@@ -454,7 +471,7 @@ export const PeerReviewPage: React.FC = () => {
                   className={styles.editButton}
                   disabled={isSubmitting}
                 >
-                  {hasExistingGrade ? 'Редактировать' : 'Оценить'}
+                  {hasExistingGrade ? '✏️ Редактировать' : '➕ Оценить'}
                 </button>
               </div>
             )}

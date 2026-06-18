@@ -175,12 +175,17 @@ export const MyPeerReviewsPage: React.FC = () => {
           {reviews.map(({ review, solution, reviewDeadline }) => {
             const isExpired = isDeadlineExpired(reviewDeadline);
             const isSubmitted = review.status === 'SUBMITTED';
-            const reviewScore = review.score; // может быть null
+            const reviewScore = review.score;
             
             return (
               <Link
                 key={review.id}
                 to={`/peer-review/${solution.id}`}
+                state={{ 
+                  peerReview: review,
+                  solution: solution,
+                  reviewDeadline: reviewDeadline 
+                }}
                 className={`${styles.reviewCard} ${isExpired ? styles.expired : ''} ${isSubmitted ? styles.submitted : ''}`}
               >
                 <div className={styles.cardHeader}>
@@ -196,14 +201,14 @@ export const MyPeerReviewsPage: React.FC = () => {
 
                 <div className={styles.cardContent}>
                   <div className={styles.studentInfo}>
-                    <span className={styles.label}>Студент:</span>
+                    <span className={styles.label}> Студент:</span>
                     <span className={styles.value}>
                       {solution.studentName || solution.studentId || 'Не указан'}
                     </span>
                   </div>
 
                   <div className={styles.solutionPreview}>
-                    <span className={styles.label}>Текст:</span>
+                    <span className={styles.label}> Текст:</span>
                     <span className={styles.value}>
                       {solution.text?.slice(0, 100) || 'Текст отсутствует'}
                       {solution.text && solution.text.length > 100 && '...'}
@@ -228,10 +233,9 @@ export const MyPeerReviewsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Проверяем наличие оценки перед отображением */}
                     {hasScore(reviewScore) && (
                       <div className={styles.metaItem}>
-                        <span className={styles.label}>Оценка:</span>
+                        <span className={styles.label}> Оценка:</span>
                         <span className={styles.scoreValue}>
                           {reviewScore} / 5
                           <span className={styles.stars}>
@@ -249,9 +253,9 @@ export const MyPeerReviewsPage: React.FC = () => {
 
                 <div className={styles.cardFooter}>
                   {isSubmitted ? (
-                    <span className={styles.submittedLabel}> Уже проверено</span>
+                    <span className={styles.submittedLabel}>✅ Уже проверено</span>
                   ) : isExpired ? (
-                    <span className={styles.expiredLabel}> Дедлайн просрочен</span>
+                    <span className={styles.expiredLabel}>⚠️ Дедлайн просрочен</span>
                   ) : (
                     <button className={styles.reviewButton}>
                       📝 Проверить решение

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { solutionApi } from '../../shared/api/solutionApi';
@@ -27,8 +26,13 @@ export const SolutionPage: React.FC = () => {
   const [selectedStudentForGrade, setSelectedStudentForGrade] = useState<string | null>(null);
   const [selectedStudentGrade, setSelectedStudentGrade] = useState<IndividualGradeResponse | null>(null);
   const [loadingStudentGrade, setLoadingStudentGrade] = useState(false);
-  const [maxFinalScore, setMaxFinalScore] = useState<number | null>(null); // Начинаем с null
+  const [maxFinalScore, setMaxFinalScore] = useState<number | null>(null);
   const [loadingMaxScore, setLoadingMaxScore] = useState(true);
+  
+  // Состояния для P2P-подобного оценивания
+  const [isEditingGrade, setIsEditingGrade] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -81,7 +85,7 @@ export const SolutionPage: React.FC = () => {
       }
     } catch (err) {
       console.warn('Failed to fetch criterion grade:', err);
-      setMaxFinalScore(100);
+      setMaxFinalScore(5);
     } finally {
       setLoadingMaxScore(false);
     }
@@ -112,6 +116,17 @@ export const SolutionPage: React.FC = () => {
     fetchStudentGrade();
   }, [solutionId, selectedStudentForGrade]);
 
+  // Автоматическое скрытие сообщения об успехе
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
+
   const handleTeamGradeSubmit = async (score: number, comment?: string) => {
     if (!solutionId || !solution) return;
 
@@ -122,6 +137,8 @@ export const SolutionPage: React.FC = () => {
       await solutionApi.gradeTeam(solutionId, { score, teacherComment: comment || null });
       
       setIsEditingTeamGrade(false);
+      setSuccessMessage('Оценка команде успешно сохранена!');
+      setShowSuccessMessage(true);
       await fetchSolution();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку команде';
@@ -147,6 +164,8 @@ export const SolutionPage: React.FC = () => {
       
       setSelectedStudentForGrade(null);
       setSelectedStudentGrade(null);
+      setSuccessMessage(`Оценка для студента успешно сохранена!`);
+      setShowSuccessMessage(true);
       await fetchSolution();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку студенту';
@@ -166,10 +185,35 @@ export const SolutionPage: React.FC = () => {
       await solutionApi.gradeByCriteria(solutionId, { items, progressMissesCount });
       
       setIsEditingCriteriaGrade(false);
+      setSuccessMessage('Оценка по критериям успешно сохранена!');
+      setShowSuccessMessage(true);
       await fetchSolution();
       await fetchMaxFinalScore(); 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку по критериям';
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Новая функция для оценивания (как в P2P)
+  const handleGradeSubmit = async (score: number, comment?: string) => {
+    if (!solutionId || !solution) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      // Используем существующий метод gradeTeam или создаем новый
+      await solutionApi.gradeTeam(solutionId, { score, teacherComment: comment || null });
+      
+      setIsEditingGrade(false);
+      setSuccessMessage('Оценка успешно сохранена!');
+      setShowSuccessMessage(true);
+      await fetchSolution();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Не удалось сохранить оценку';
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -183,8 +227,6 @@ export const SolutionPage: React.FC = () => {
   const getMemberGrade = (studentId: string): MemberGrade | undefined => {
     return solution?.memberGrades?.find(grade => grade.studentId === studentId);
   };
-  console.log('📊 MemberGrades:', solution?.memberGrades);
-
 
   const getStudentName = (studentId: string): string => {
     if (solution?.studentName && solution?.studentId === studentId) {
@@ -199,6 +241,9 @@ export const SolutionPage: React.FC = () => {
     if (maxScore <= 50) return 2;
     return 5;
   };
+
+  // Вычисляемое значение для проверки наличия оценки
+  const hasExistingGrade = Boolean(solution?.teamGrade !== null && solution?.teamGrade !== undefined && solution?.teamGrade > 0);
 
   if (authError) {
     return (
@@ -243,8 +288,6 @@ export const SolutionPage: React.FC = () => {
   const hasTeamGrade = solution.teamGrade !== null && solution.teamGrade !== undefined;
   const hasCriteria = criteria.length > 0;
 
-  console.log('🎯 Current maxFinalScore:', maxFinalScore);
-
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -257,11 +300,72 @@ export const SolutionPage: React.FC = () => {
       </div>
 
       <div className={styles.container}>
+        {/* Сообщение об успехе */}
+        {showSuccessMessage && (
+          <div className={styles.successMessage}>
+            ✅ {successMessage}
+          </div>
+        )}
+
         <SolutionDetails solution={solution} />
 
-       
+        {/* Новая форма оценивания (как в P2P) */}
+        <section className={styles.gradingSection}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>
+              {hasExistingGrade && !isEditingGrade ? '⭐ Оценка решения' : '📝 Оценка решения'}
+            </h2>
+            
+            {!isEditingGrade && (
+              <div className={styles.buttonGroup}>
+                <button 
+                  onClick={() => setIsEditingGrade(true)}
+                  className={styles.editButton}
+                  disabled={isSubmitting}
+                >
+                  {hasExistingGrade ? '✏️ Редактировать оценку' : '➕ Оценить решение'}
+                </button>
+              </div>
+            )}
+          </div>
 
-        {}
+          {/* Отображение существующей оценки */}
+          {hasExistingGrade && !isEditingGrade && (
+            <div className={styles.submittedGrade}>
+              <div className={styles.gradeDisplay}>
+                <span className={styles.gradeLabel}>Оценка:</span>
+                <div className={styles.gradeWithStars}>
+                  <span className={styles.gradeValue}>{solution.teamGrade}</span>
+                  <span className={styles.gradeMax}>/{maxFinalScore ?? 5}</span>
+                </div>
+              </div>
+              
+              
+              
+              <div className={styles.editHint}>
+                💡 Нажмите "Редактировать оценку", чтобы изменить
+              </div>
+            </div>
+          )}
+
+          {/* Форма редактирования/создания оценки */}
+          {isEditingGrade && (
+            <GradingPanel
+              key={`grade-${solutionId}`}
+              initialScore={solution.teamGrade || 0}
+              onSubmit={handleGradeSubmit}
+              onCancel={() => setIsEditingGrade(false)}
+              isSubmitting={isSubmitting}
+              showComment={true}
+              title={hasExistingGrade ? "Редактирование оценки" : "Новая оценка"}
+              minScore={0}
+              maxScore={maxFinalScore || 5}
+              step={getStep(maxFinalScore || 5)}
+            />
+          )}
+        </section>
+
+        {/* Оценка по критериям */}
         {hasCriteria && (
           <div className={styles.criteriaGradingSection}>
             <div className={styles.sectionHeader}>
@@ -294,7 +398,7 @@ export const SolutionPage: React.FC = () => {
           </div>
         )}
 
-        {}
+        {/* Индивидуальные оценки участников (для команд) */}
         {solution.ownerType === 'TEAM' && solution.memberGrades && solution.memberGrades.length > 0 && (
           <div className={styles.memberGradingSection}>
             <h2 className={styles.sectionTitle}>👥 Индивидуальные оценки участников</h2>
@@ -343,7 +447,6 @@ export const SolutionPage: React.FC = () => {
               })}
             </div>
 
-            {}
             {selectedStudentForGrade && maxFinalScore !== null && (
               <div className={styles.memberGradingModal}>
                 <div className={styles.memberGradingModalContent}>
