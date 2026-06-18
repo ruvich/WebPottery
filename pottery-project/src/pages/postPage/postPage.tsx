@@ -9,6 +9,7 @@ import { CriteriaListCard } from "../../entities/criteria/criteriaListCard";
 import { CommentsList } from "../../features/comment/commentList";
 import { CriterionGradeModal } from "../../entities/post/CriterionGradeModal";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export const PostPage = () => {
     const [post, setPost] = useState<PostsResponse | null>(null);
@@ -17,6 +18,7 @@ export const PostPage = () => {
     const [openFormCriteria, setOpenFormCriteria] = useState(false);
     const [openCriterionGrade, setOpenCriterionGrade] = useState(false);
     const [solutionId, setSolutionId] = useState<string | null>(null);
+    const [isAssigning, setIsAssigning] = useState(false);
     const navigate = useNavigate();
     const role = localStorage.getItem("userRole");
     const currentUserId = localStorage.getItem("userId");
@@ -31,6 +33,36 @@ export const PostPage = () => {
             if (status === 401) navigate("/login");
             else if (status === 500) navigate("/error-500");
             else console.error("Ошибка загрузки поста", err);
+        }
+    };
+
+    const handleAssignPeerReviews = async () => {
+        if (!postID) return;
+        
+        setIsAssigning(true);
+        try {
+            const token = localStorage.getItem("accessToken");
+            await axios.post(
+                `http://localhost:8080/api/posts/${postID}/peer-reviews/assign`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'accept': '*/*'
+                    }
+                }
+            );
+            // Показываем успешное уведомление или перезагружаем данные
+            alert("Peer reviews успешно распределены!");
+            await loadPost(); // Обновляем данные
+        } catch (err: any) {
+            const status = err.response?.status;
+            if (status === 401) navigate("/login");
+            else if (status === 500) navigate("/error-500");
+            else console.error("Ошибка распределения peer reviews", err);
+            alert("Ошибка при распределении peer reviews");
+        } finally {
+            setIsAssigning(false);
         }
     };
 
@@ -108,7 +140,35 @@ export const PostPage = () => {
                                 </Button>
                             )}
 
-                            {/* 🔥 НОВАЯ КНОПКА: Оценить решения других (P2P) */}
+                            {/* 🔥 НОВАЯ КНОПКА: Распределить peer reviews (только для учителя) */}
+                            {role === "TEACHER" && 
+                             post?.type === "TASK" && 
+                             post?.task.reviewSettings?.reviewType === "PEER_TO_PEER" && (
+                                <Button
+                                    variant="contained"
+                                    fullWidth
+                                    onClick={handleAssignPeerReviews}
+                                    disabled={isAssigning}
+                                    sx={{
+                                        py: 1.4,
+                                        borderRadius: 3,
+                                        textTransform: "none",
+                                        fontWeight: 700,
+                                        background: "linear-gradient(135deg, #ff9800 0%, #f57c00 100%)",
+                                        boxShadow: "0 8px 18px rgba(255, 152, 0, 0.25)",
+                                        "&:hover": {
+                                            background: "linear-gradient(135deg, #fb8c00 0%, #e65100 100%)",
+                                        },
+                                        "&:disabled": {
+                                            background: "#ccc",
+                                        },
+                                    }}
+                                >
+                                    {isAssigning ? "Распределение..." : "📋 Распределить peer reviews"}
+                                </Button>
+                            )}
+
+                            {/* 🔥 Кнопка: Оценить решения других (P2P) */}
                             {post?.type === "TASK" && 
                              post?.task.reviewSettings?.reviewType === "PEER_TO_PEER" && 
                              role !== "TEACHER" && (
@@ -124,7 +184,7 @@ export const PostPage = () => {
                                         px: 0,
                                     }}
                                 >
-                                    Проверить работыы
+                                    Проверить работы
                                 </Button>
                             )}
 

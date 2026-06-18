@@ -471,7 +471,7 @@ export const PeerReviewPage: React.FC = () => {
                   className={styles.editButton}
                   disabled={isSubmitting}
                 >
-                  {hasExistingGrade ? '✏️ Редактировать' : '➕ Оценить'}
+                  {hasExistingGrade ? '✏️ Редактировать' : ''}
                 </button>
               </div>
             )}

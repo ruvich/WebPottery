@@ -440,7 +440,7 @@ export const SolutionPage: React.FC = () => {
                     >
                       {currentGrade?.score !== undefined && currentGrade.score !== null 
                         ? '✏️ Изменить оценку' 
-                        : '➕ Оценить'}
+                        : ''}
                     </button>
                   </div>
                 );
